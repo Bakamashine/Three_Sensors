@@ -9,6 +9,7 @@ class Temperature
 private:
   // float _volt = 0.0F;
   ld _resist = 0;
+  uint8_t _pin;
   int _acp = 0;
   float _adcFilter = -1.0F;
   uint32_t _lastSampleMs = 0;
@@ -23,6 +24,7 @@ public:
   int16_t getTemperature();
   static int getMaxT();
   static int getMinT();
+  Temperature(uint8_t pin);
   Temperature &setRes(int);
   Temperature &setAcp(int);
   int getAcp();

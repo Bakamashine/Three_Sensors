@@ -1,6 +1,5 @@
 #pragma once
 
-#define RESISTOR_PIN A0
 #define GREEN_LED_PIN 3
 #define TOGGLE_PIN A3
 #define BURNER_PIN 4 // (led)

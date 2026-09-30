@@ -16,7 +16,7 @@ void sensorSetup();
 // void toggleSetup();
 
 DebugUI debugUI;
-Temperature temp;
+Temperature temp(SENSOR_PIN);
 UI ui;
 MenuUI &menuUI = ui.getMenuUI();
 Validate val;
@@ -43,7 +43,8 @@ void setup()
 
   ui.begin();
   ui.initUI();
-#ifdef SHOW_START_WINDOW
+#if defined(SHOW_START_WINDOW) && !defined(DEBUG)
+// #ifdef SHOW_START_WINDOW
   ui.startWindow();
 #endif
 

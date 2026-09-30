@@ -19,8 +19,11 @@
 #define GET_RES(value) (RESISTOR_FROM_SENSOR * static_cast<float>(value) / (MAX_ACP - value))
 #define TEMP_INTERVAL (2 * 1000) // ms between samples
 
-
 #define MIN_TEMP_BORDER -10
+
+Temperature::Temperature(uint8_t pin) : _pin(pin)
+{
+}
 
 int16_t Temperature::ntcTempAt(size_t i)
 {
@@ -70,7 +73,7 @@ int16_t Temperature::getTemperature()
 
   _lastSampleMs = now;
 
-  int rawAdc = analogRead(SENSOR_PIN);
+  int rawAdc = analogRead(_pin);
   if (_adcFilter < 0.0F)
     _adcFilter = static_cast<float>(rawAdc);
   else
