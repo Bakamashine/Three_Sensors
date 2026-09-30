@@ -1,12 +1,13 @@
 #pragma once
+#include "constants/constants.h"
+#if UI_BACKEND == UI_BACKEND_U8G2
 #include <stdint.h>
 #include <U8g2lib.h>
 #include "menuUi.h"
 #include "constants/constants.h"
+#include "interface/display.h"
 
-#define DEFAULT_SIZE 24
-
-class UI : public OLED_CLASS
+class UI : public OLED_CLASS, public IDisplay
 {
 private:
   float _temperature;
@@ -22,20 +23,26 @@ private:
 
   // void setText(char*, size_t, const char*, ...);
   MenuUI *menuUI;
-  void main();
+  void main() override;
 
 public:
   UI();
-  void initUI();
-  ~UI()
-  {
-    free(menuUI);
-  }
-  UI &setTemperature(float);
-  void draw();
-  UI &setAcp(int);
-  UI &setRes(float);
-  MenuUI &getMenuUI();
-  void startWindow();
+  ~UI() override;
+
+  void clearDisplay() override;
+  void setFont(UiFont font) override;
+  void drawStr(int x, int y, const char *str) override;
+  int getStrWidth(const char *str) override;
+  int getFontHeight() override;
+
+  void initDisplay(int sda = -1, int scl = -1) override;
+  void initUI() override;
+  IDisplay &setTemperature(float) override;
+  void draw() override;
+  IDisplay &setAcp(int) override;
+  IDisplay &setRes(float) override;
+  MenuUI &getMenuUI() override;
+  void startWindow() override;
   int drawCentered(const char *, int padding_top = 0, int padding_bottom = 0, int padding_left = 0, int padding_right = 0);
 };
+#endif

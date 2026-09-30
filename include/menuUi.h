@@ -1,6 +1,5 @@
 #pragma once
-
-#include <U8g2lib.h>
+#include "interface/display.h"
 
 enum MenuItem
 {
@@ -13,12 +12,12 @@ enum MenuItem
 class MenuUI
 {
 private:
-  U8G2 *_display;
+  IDisplay *_display;
   int _selected;
   bool _isValueOpen = false;
 
 public:
-  MenuUI(U8G2 *display);
+  explicit MenuUI(IDisplay *display);
   void goToUp();
   void goToDown();
   void draw();

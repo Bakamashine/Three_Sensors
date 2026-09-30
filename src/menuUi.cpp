@@ -1,4 +1,5 @@
 #include "menuUi.h"
+#include <stdio.h>
 #include "constants/constants.h"
 #include "constants/ui.h"
 #include "constants/settings.h"
@@ -7,8 +8,8 @@
 
 static const char *const names[MENU_ITEMS_COUNT] = {"Change hysteresis", "Change temperature", "Ch. value for cor. sensor"};
 
-MenuUI::MenuUI(U8G2 *_display)
-    : _display(_display), _selected(CHANGE_HYSTERESIS)
+MenuUI::MenuUI(IDisplay *display)
+    : _display(display), _selected(CHANGE_HYSTERESIS)
 {
 }
 
@@ -24,7 +25,7 @@ void MenuUI::goToDown()
 
 void MenuUI::draw()
 {
-  _display->setFont(FONT);
+  _display->setFont(FONT_UI);
 
   if (_isValueOpen)
   {

@@ -1,13 +1,19 @@
 #include <Arduino.h>
 #include "constants/constants.h"
 #include "debugUi.h"
-#include "temperature.h"
-#include "ui.h"
+#include "sensor.h"
 #include "constants/constants.h"
 // #include <OneButton.h>
 #include "validate.h"
 #include "constants/pin.h"
 #include "settings.h"
+
+// ui includes
+#if UI_BACKEND == UI_BACKEND_U8G2
+#include "ui.h"
+#elif UI_BACKEND == UI_BACKEND_GYVER
+#include "gyverui.h"
+#endif
 
 #define IF_SETTINGS_OPEN_RETURN ({  if (!Settings::getSettingsStatus()) return ; })
 typedef unsigned long ul;
@@ -16,10 +22,24 @@ void sensorSetup();
 // void toggleSetup();
 
 DebugUI debugUI;
-Temperature temp(SENSOR_PIN);
-UI ui;
+// main
+// reserve 1
+// reserve 2
+// street
+Sensor main_sensor(MAIN_SENSOR_PIN);
+Sensor first_reserve_sensor(FIRST_RESERVE_SENSOR_PIN);
+Sensor second_reserve_sensor(SECOND_RESERVE_SENSOR_PIN);
+Sensor street_sensor(STREET_SENSOR_PIN);
+
+#if UI_BACKEND == UI_BACKEND_U8G2
+UI uiImpl;
+#elif UI_BACKEND == UI_BACKEND_GYVER
+GyverUI<GYVER_PANEL> uiImpl;
+#endif
+IDisplay &ui = uiImpl;
 MenuUI &menuUI = ui.getMenuUI();
 Validate val;
+
 
 float temperature = 0.0F;
 float res = 0.0F;
@@ -41,10 +61,12 @@ void setup()
 {
   Serial.begin(BOD);
 
-  ui.begin();
-  ui.initUI();
-#if defined(SHOW_START_WINDOW) && !defined(DEBUG)
-// #ifdef SHOW_START_WINDOW
+  // ui.begin();
+  // ui.initUI();
+
+  ui.initDisplay();
+  // #if defined(SHOW_START_WINDOW) && !defined(DEBUG)
+#ifdef SHOW_START_WINDOW
   ui.startWindow();
 #endif
 
@@ -57,8 +79,8 @@ void loop()
 {
   // btn_plus.tick();
   // btn_minus.tick();
-  temperature = temp.getTemperature();
-  res = temp.getRes();
+  temperature = main_sensor.getTemp();
+  res = main_sensor.getRes();
 #ifdef DEBUG
   // Serial.println(temp.getVolt());
   Serial.print("Resistance: ");
@@ -66,14 +88,17 @@ void loop()
   // Serial.println(temperature);
   // debugUI.fprintValue("Volt", temp.getVolt());
   // debugUI.fprintValue("Resistance", temp.getRes());
-  debugUI.printValue("ACP", temp.getAcp());
+  debugUI.printValue("ACP", main_sensor.getAcp());
   debugUI.printValue("Temperature", temperature);
 #endif
   ui
-      .setTemperature(temperature)
-      .setAcp(temp.getAcp())
-      .setRes(res)
-      .draw();
+    .draw();
+  // ui
+  //     .setTemperature(temperature)
+  //     .setAcp(main_sensor.getAcp())
+  //     .setRes(res)
+  //     .setMainSensor(main_sensor)
+  //     .draw();
 
   /// validate
   // int code = val.setTemperature().executePipelineValidate();
@@ -83,7 +108,7 @@ void loop()
   /// burner
   // if (!systemHalted)
   // {
-  //   if (temp.getTemperature() <= Settings::getUserTemp() - Settings::getHysteresis())
+  //   if (temp.getTemp() <= Settings::getUserTemp() - Settings::getHysteresis())
   //   {
   //     Settings::setBurnerStatus(true);
 
@@ -95,7 +120,17 @@ void loop()
 
 void sensorSetup()
 {
-  pinMode(SENSOR_PIN, INPUT);
+  pinMode(MAIN_SENSOR_PIN, INPUT);
+  pinMode(FIRST_RESERVE_SENSOR_PIN, INPUT);
+  pinMode(SECOND_RESERVE_SENSOR_PIN, INPUT);
+  pinMode(STREET_SENSOR_PIN, INPUT);
+
+  ui
+    .setMainSensor(main_sensor)
+    .setFirstReserveSensor(first_reserve_sensor)
+    .setSecondReserveSensor(second_reserve_sensor)
+    .setStreetSensor(street_sensor);
+
 }
 
 // void buttonSetup()

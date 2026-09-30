@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "settings.h"
-#include "temperature.h"
+#include "sensor.h"
 #include "page.h"
 #include "constants/constants.h"
 #include "constants/settings.h"
@@ -18,14 +18,14 @@ int Settings::getUserTemp()
 }
 void Settings::upUserTemp()
 {
-  if (Temperature::getMaxT() <= _userTemp)
+  if (Sensor::getMaxT() <= _userTemp)
     return;
   _userTemp++;
 }
 
 void Settings::downUserTemp()
 {
-  if (Temperature::getMinT() >= _userTemp)
+  if (Sensor::getMinT() >= _userTemp)
     return;
   _userTemp--;
 }
