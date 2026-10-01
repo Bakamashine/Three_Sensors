@@ -31,17 +31,17 @@
 
 // raw writing row
 #define _WRITE_ROW(row, text, acp, t) \
-  drawStr(G_FIRST_COLUMN, row, text);  \
-  drawStr(G_SECOND_COLUMN, row, acp);  \
+  drawStr(G_FIRST_COLUMN, row, text); \
+  drawStr(G_SECOND_COLUMN, row, acp); \
   drawStr(G_THIRD_COLUMN, row, t);
 
-#define WRITE_ROW(row, text, p_cls)                             \
-  do                                                            \
-  {                                                             \
-    char acpBuf[8];                                             \
-    char tempBuf[8];                                            \
+#define WRITE_ROW(row, text, p_cls)                              \
+  do                                                             \
+  {                                                              \
+    char acpBuf[8];                                              \
+    char tempBuf[8];                                             \
     snprintf(tempBuf, sizeof(tempBuf), "%d", (p_cls).getTemp()); \
-    snprintf(acpBuf, sizeof(acpBuf), "%d", (p_cls).getAcp());     \
+    snprintf(acpBuf, sizeof(acpBuf), "%d", (p_cls).getAcp());    \
     _WRITE_ROW(row, text, acpBuf, tempBuf);                      \
   } while (0)
 
@@ -129,7 +129,7 @@ main()
   // second reserve sensor
   if (_secondReserveSensor)
     WRITE_ROW(G_FOURTH_ROW, PREVIEW_SECOND_RESERVE, *_secondReserveSensor);
-  
+
   // street sensor
   if (_streetSensor)
     WRITE_ROW(G_FIFTH_ROW, PREVIEW_STREET, *_streetSensor);

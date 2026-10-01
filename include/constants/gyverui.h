@@ -12,6 +12,8 @@
 #define GYVER_RST -1
 #define GYVER_ADDRESS 0x3C
 
+#define PERMITTED_OFFSET 4
+
 /// positions
 
 // ################ ACP page #######################

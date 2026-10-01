@@ -16,7 +16,6 @@ class IDisplay
 {
 private:
   virtual void main();
-
 protected:
   virtual ~IDisplay() = default;
 

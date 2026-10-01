@@ -60,7 +60,7 @@ void ledProgramStatus(bool);
 void setup()
 {
   Serial.begin(BOD);
-
+  DebugUI::printTitle("Setup");
   // ui.begin();
   // ui.initUI();
 
@@ -77,6 +77,7 @@ void setup()
 
 void loop()
 {
+  DebugUI::printTitle("Main loop");
   // btn_plus.tick();
   // btn_minus.tick();
   temperature = main_sensor.getTemp();

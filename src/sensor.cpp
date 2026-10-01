@@ -21,6 +21,36 @@ Sensor::Sensor(uint8_t pin) : _pin(pin)
 {
 }
 
+bool *Sensor::checkSensor(Sensor **sensors, size_t size)
+{
+  return NULL;
+  // int16_t temp[size];
+  // for (size_t i = 0; i < size; i++)
+  // {
+  //   temp[i] = sensors[i]->getTemp();
+  // }
+  // sort(temp,size);
+  // int16_t min = temp[0];
+  // bool t_statuses[size];
+  // for (size_t i = 0; i < size; i++)
+  // {
+  //   t_statuses[i]  = !(temp[i]+4 >= min || temp[i]-4 <= min);
+  // }
+
+  // bool final_result[size];
+  // for (size_t i = 0; i < size; i++)
+  // {
+  //   final_result[i]
+  // }
+
+  // return t_statuses;
+}
+
+uint8_t Sensor::getPin()
+{
+  return _pin;
+}
+
 int16_t Sensor::ntcTempAt(size_t i)
 {
   return static_cast<int16_t>(pgm_read_word(&ntcTable[i].temp_c));

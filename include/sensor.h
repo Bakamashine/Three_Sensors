@@ -3,6 +3,7 @@
 
 #define ATTEMPTS 5
 
+
 class Sensor
 {
 private:
@@ -17,6 +18,7 @@ private:
   int _correctInt = 0;
   int16_t getTempFromTable(int rawAcp);
   static void sort(int16_t *array, size_t size);
+  static bool *checkSensor(Sensor **, size_t size);
 
 public:
   int16_t getTemp();
@@ -26,6 +28,7 @@ public:
   Sensor &setRes(int rawAdc);
   Sensor &setAcp(int acp);
   Sensor &setCorrectInt(int);
+  uint8_t getPin();
   int getCorrectInt();
   int getAcp();
   float getRes();

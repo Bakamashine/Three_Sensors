@@ -31,7 +31,7 @@ private:
   MenuUI *menuUI = nullptr;
   uint8_t _fontScale = 1;
 
-Sensor *_mainSensor = nullptr;
+  Sensor *_mainSensor = nullptr;
   Sensor *_firstReserveSensor = nullptr;
   Sensor *_secondReserveSensor = nullptr;
   Sensor *_streetSensor = nullptr;
@@ -55,7 +55,7 @@ public:
   IDisplay &setRes(float) override;
   MenuUI &getMenuUI() override;
   void startWindow() override;
-IDisplay &setMainSensor(Sensor &) override;
+  IDisplay &setMainSensor(Sensor &) override;
   IDisplay &setFirstReserveSensor(Sensor &) override;
   IDisplay &setStreetSensor(Sensor &) override;
   IDisplay &setSecondReserveSensor(Sensor &) override;
