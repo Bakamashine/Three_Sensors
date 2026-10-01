@@ -140,7 +140,10 @@ void btnMenuOnClick()
   if (Page::getCurrentPage() == SETTINGS)
     Page::setCurrentPage(MAIN_PAGE);
   else
+  {
     Page::setCurrentPage(SETTINGS);
+    menuUI.setValueStatus(false);
+  }
 
 #ifdef DEBUG
   Serial.println("menuClick");
@@ -150,32 +153,44 @@ void btnMenuLongPress() {}
 
 void btnPlusLongPress()
 {
+  if (Page::getCurrentPage() == SETTINGS)
+    menuUI.setValueStatus(true);
 }
 
 void btnPlusOneClick()
 {
-  if (Page::getCurrentPage() == SETTINGS)
+  if (Page::getCurrentPage() == SETTINGS && !menuUI.isValueOpen())
   {
     menuUI.goToUp();
 #ifdef DEBUG
     Serial.println("goToUp");
 #endif
   }
+  else if (Page::getCurrentPage() == SETTINGS && menuUI.isValueOpen())
+  {
+    menuUI.increaseValue();
+  }
 }
 
 void btnMinusOneClick()
 {
-  if (Page::getCurrentPage() == SETTINGS)
+  if (Page::getCurrentPage() == SETTINGS && !menuUI.isValueOpen())
   {
     menuUI.goToDown();
 #ifdef DEBUG
     Serial.println("goToDown");
 #endif
   }
+  else if (Page::getCurrentPage() == SETTINGS && menuUI.isValueOpen())
+  {
+    menuUI.decreaseValue();
+  }
 }
 
 void btnMinusLongPress()
 {
+  if (Page::getCurrentPage() == SETTINGS)
+    menuUI.setValueStatus(false);
 }
 
 void btnSetup()

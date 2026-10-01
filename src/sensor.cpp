@@ -85,7 +85,7 @@ int16_t Sensor::getTemp()
 {
   uint32_t now = millis();
   if (now - _lastSampleMs < TEMP_INTERVAL)
-    return _lastTemp;
+    return _lastTemp + _correctInt;
 
   _lastSampleMs = now;
 
@@ -96,7 +96,7 @@ int16_t Sensor::getTemp()
     // EMA: alpha * new + (1 - alpha) * old
     _adcFilter = FILTER_ALPHA * rawAdc + (1.0F - FILTER_ALPHA) * _adcFilter;
 
-  _samples[_sampleIdx] = getTempFromTable(static_cast<int>(_adcFilter + 0.5F)) + Settings::getCorrectInt();
+  _samples[_sampleIdx] = getTempFromTable(static_cast<int>(_adcFilter + 0.5F));
   _sampleIdx++;
 
   if (_sampleIdx >= ATTEMPTS)
@@ -106,7 +106,7 @@ int16_t Sensor::getTemp()
     _sampleIdx = 0;
   }
 
-  return _lastTemp;
+  return _lastTemp + _correctInt;
 }
 
 int Sensor::getMaxT()

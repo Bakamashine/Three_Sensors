@@ -29,4 +29,5 @@
 
 #define ROWS 5
 
-/// menu selection marker, shares the ACP table rows
+/// menu selection marker column, left of the first table column
+#define U8G2_MENU_MARKER_X 0
