@@ -9,6 +9,8 @@ private:
   static bool _errorStatus;
   static int _hysteresis; // burner hysteresis deadband
   static int _correctInt;
+  static int _maxPermOffset;
+  static int _minPermOffset;
 
 public:
   static int getUserTemp();
@@ -22,4 +24,8 @@ public:
   static int getHysteresis();
   static void setCorrectInt(int);
   static int getCorrectInt();
+  static int getMaxPermOffset();
+  static int getMinPermOffset();
+  static void setMaxPermOffset(int);
+  static void setMinPermOffset(int);
 };

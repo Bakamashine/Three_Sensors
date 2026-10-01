@@ -21,7 +21,7 @@
   template <int _TYPE, int _BUFF, int _CONN, int8_t _CS, int8_t _DC, int8_t _RST> \
   ReturnType GyverUI<_TYPE, _BUFF, _CONN, _CS, _DC, _RST>::
 
-// #define WRITE_ROW(row, text, acp, t)                                  \
+// #define AT_WRITE_ROW(row, text, acp, t)                                  \
 //   do                                                                    \
 //   {                                                                     \
 //     if (text) drawStr(G_CENTERED_X(G_FIRST_COLUMN, text), row, text);    \
@@ -30,19 +30,19 @@
 //   } while (0)
 
 // raw writing row
-#define _WRITE_ROW(row, text, acp, t) \
-  drawStr(G_FIRST_COLUMN, row, text); \
-  drawStr(G_SECOND_COLUMN, row, acp); \
+#define RAW_WRITE_ROW(row, text, acp, t) \
+  drawStr(G_FIRST_COLUMN, row, text);    \
+  drawStr(G_SECOND_COLUMN, row, acp);    \
   drawStr(G_THIRD_COLUMN, row, t);
 
-#define WRITE_ROW(row, text, p_cls)                              \
+#define AT_WRITE_ROW(row, text, p_cls)                           \
   do                                                             \
   {                                                              \
     char acpBuf[8];                                              \
     char tempBuf[8];                                             \
     snprintf(tempBuf, sizeof(tempBuf), "%d", (p_cls).getTemp()); \
     snprintf(acpBuf, sizeof(acpBuf), "%d", (p_cls).getAcp());    \
-    _WRITE_ROW(row, text, acpBuf, tempBuf);                      \
+    RAW_WRITE_ROW(row, text, acpBuf, tempBuf);                   \
   } while (0)
 
 const unsigned char epd_bitmap_Capture[] PROGMEM = {
@@ -114,29 +114,29 @@ main()
 {
 
   // columns
-  _WRITE_ROW(G_FIRST_ROW, nullptr, PREVIEW_ACP_TEXT, PREVIEW_COLUMN_TEMP);
+  RAW_WRITE_ROW(G_FIRST_ROW, nullptr, PREVIEW_ACP_TEXT, PREVIEW_COLUMN_TEMP);
   // rows
 
   // main sensor
 
   if (_mainSensor)
-    WRITE_ROW(G_SECOND_ROW, PREVIEW_TEMP, *_mainSensor);
+    AT_WRITE_ROW(G_SECOND_ROW, PREVIEW_TEMP, *_mainSensor);
 
   // first reserve sensor
   if (_firstReserveSensor)
-    WRITE_ROW(G_THIRD_ROW, PREVIEW_FIRST_RESERVE, *_firstReserveSensor);
+    AT_WRITE_ROW(G_THIRD_ROW, PREVIEW_FIRST_RESERVE, *_firstReserveSensor);
 
   // second reserve sensor
   if (_secondReserveSensor)
-    WRITE_ROW(G_FOURTH_ROW, PREVIEW_SECOND_RESERVE, *_secondReserveSensor);
+    AT_WRITE_ROW(G_FOURTH_ROW, PREVIEW_SECOND_RESERVE, *_secondReserveSensor);
 
   // street sensor
   if (_streetSensor)
-    WRITE_ROW(G_FIFTH_ROW, PREVIEW_STREET, *_streetSensor);
+    AT_WRITE_ROW(G_FIFTH_ROW, PREVIEW_STREET, *_streetSensor);
 
-  // _WRITE_ROW(G_THIRD_ROW, PREVIEW_FIRST_RESERVE, "0.00", "0.00");
+  // RAW_WRITE_ROW(G_THIRD_ROW, PREVIEW_FIRST_RESERVE, "0.00", "0.00");
 
-  // WRITE_ROW(G_FOURTH_ROW, PREVIEW_STREET, "0.00", "0.00");
+  // AT_WRITE_ROW(G_FOURTH_ROW, PREVIEW_STREET, "0.00", "0.00");
 
   // drawStr(TEMP_X, TEMP_Y, tempText);
   // drawStr(VOLT_X, VOLT_Y, resText);
@@ -146,7 +146,6 @@ main()
 UI_METHOD(void)
 draw()
 {
-  initUI();
   clearDisplay();
   setFont(FONT_UI);
   switch (Page::getCurrentPage())
@@ -154,7 +153,7 @@ draw()
   case MAIN_PAGE:
     main();
     break;
-  case SELECT_SETTINGS:
+  case SETTINGS:
     menuUI->draw();
     break;
   default:
@@ -168,8 +167,8 @@ startWindow()
 {
   clearDisplay();
   setFont(FONT_START);
-  int x = _CENTER_X(FACTORY_NAME);
-  int y = _CENTER_Y;
+  int x = _CENTER_X(*this, FACTORY_NAME);
+  int y = _CENTER_Y(*this);
   drawStr(x, y, FACTORY_NAME);
   Base::drawBitmap(CENTER_X / 2, CENTER_Y / 2, epd_bitmap_Capture, 70, 40);
   Base::update();

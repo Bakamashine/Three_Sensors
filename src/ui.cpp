@@ -9,18 +9,20 @@
 #include "constants/ui.h"
 #include "constants/constants.h"
 #include "menuUi.h"
+#include "macro/ui.h"
 #include "helperUi.h"
+#include "contest.h"
 #include <U8g2lib.h>
 
 // 'Capture', 70x40px LOGO
 const unsigned char epd_bitmap_Capture[] PROGMEM = {
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0x3f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff,
     0xff, 0xbf, 0xfa, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff, 0x8f, 0xf4, 0xff, 0xff, 0x3f, 0xff,
     0xff, 0xff, 0xff, 0xe7, 0xfb, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff, 0xc5, 0xc7, 0xff, 0xff,
     0x3f, 0xff, 0xff, 0xff, 0x3f, 0xe0, 0x3e, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff, 0x47, 0xc2, 0xff,
-    0xfc, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff, 0x08, 0xcc, 0x7f, 0xfd, 0xff, 0x3f, 0xff, 0xff, 0x1f, 0xf2,
+    0xfc, 0xff, 0x3f, 0xff, 0xff, 0xff, 0x08, 0xcc, 0x7f, 0xfd, 0xff, 0x3f, 0xff, 0xff, 0x1f, 0xf2,
     0x4f, 0xef, 0xfb, 0xff, 0x3f, 0xff, 0xff, 0xa3, 0xff, 0x9f, 0xfb, 0xf7, 0xff, 0x3f, 0xff, 0x7f,
     0xfd, 0xdf, 0xbf, 0xff, 0xef, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff, 0x5d, 0x6f, 0xed, 0xff, 0x3f,
     0xff, 0xff, 0xff, 0x7a, 0xff, 0x7f, 0xe8, 0xff, 0x3f, 0xff, 0xff, 0xdd, 0xdf, 0xdf, 0xdf, 0xfb,
@@ -41,18 +43,10 @@ const unsigned char epd_bitmap_Capture[] PROGMEM = {
 UI::UI()
     : OLED_CLASS(U8G2_R0, /* reset=*/U8X8_PIN_NONE)
 {
-  tempText[0] = '\0';
-  // hysteresisText[0] = '\0';
-  resText[0] = '\0';
-  acpText[0] = '\0';
-  // userTempText[0] = '\0';
   menuUI = new MenuUI(this);
 }
 
-UI::~UI()
-{
-  delete menuUI;
-}
+UI::~UI() { delete menuUI; }
 
 void UI::initDisplay(int sda, int scl)
 {
@@ -61,6 +55,8 @@ void UI::initDisplay(int sda, int scl)
   OLED_CLASS::begin();
   clearDisplay();
 }
+
+void UI::initUI() {}
 
 MenuUI &UI::getMenuUI()
 {
@@ -75,30 +71,30 @@ IDisplay &UI::setTemperature(float temp)
 
 void UI::main()
 {
-  // setText(userTempText, sizeof(userTempText), "UT: %d", Settings::getUserTemp());
-  // setText(hysteresisText, sizeof(hysteresisText), "Delta: %d", Settings::getHysteresis());
-  this->drawStr(TEMP_X, TEMP_Y, tempText);
-  this->setCursor(VOLT_X, VOLT_Y);
-  this->print(resText);
-  this->drawStr(BURNER_X, BURNER_Y, acpText);
-  // this->drawStr(VOLT_X, VOLT_Y, resText);
-  // this->drawStr(VOLT_X, VOLT_Y, voltText);
-  // this->drawStr(HYSTERESIS_X, HYSTERESIS_Y, hysteresisText);
-  // this->drawStr(USERTEMP_X, USERTEMP_Y, userTempText);
-  // snprintf(burnerText, sizeof(burnerText), "Burner: %s", Settings::getBurnerStatus() ? "ON" : "OFF");
-  // if (Settings::getErrorStatus())
-  // {
-  //   this->drawStr(BURNER_X, BURNER_Y, Error::getErrorMessage(errorCode));
-  // }
-  // else
-  // {
-  //   this->drawStr(BURNER_X, BURNER_Y, burnerText);
-  // }
+  // columns
+  RAW_WRITE_ROW(U8G2_FIRST_ROW, nullptr, PREVIEW_ACP_TEXT, PREVIEW_COLUMN_TEMP, this);
+  // rows
+
+  // main sensor
+  if (_mainSensor)
+    AT_WRITE_ROW(U8G2_SECOND_ROW, PREVIEW_TEMP, *_mainSensor);
+
+  // first reserve sensor
+  if (_firstReserveSensor)
+    AT_WRITE_ROW(U8G2_THIRD_ROW, PREVIEW_FIRST_RESERVE, *_firstReserveSensor);
+
+  // second reserve sensor
+  if (_secondReserveSensor)
+    AT_WRITE_ROW(U8G2_FOURTH_ROW, PREVIEW_SECOND_RESERVE, *_secondReserveSensor);
+
+  // street sensor
+  if (_streetSensor)
+    AT_WRITE_ROW(U8G2_FIFTH_ROW, PREVIEW_STREET, *_streetSensor);
 }
 
 void UI::draw()
 {
-  initUI();
+  // initUI();
   setFont(FONT_UI);
   this->firstPage();
   do
@@ -108,21 +104,13 @@ void UI::draw()
     case MAIN_PAGE:
       main();
       break;
-    case SELECT_SETTINGS:
+    case SETTINGS:
       menuUI->draw();
       break;
     default:
       break;
     }
   } while (this->nextPage());
-}
-
-void UI::initUI()
-{
-  snprintf(tempText, sizeof(tempText), "Temperature: %d", static_cast<int>(_temperature));
-  // snprintf(resText, sizeof(resText), "Resistance: %.2f", static_cast<double>(_resistance));
-  setFloatText(resText, sizeof(resText), "Resistance", _resistance);
-  snprintf(acpText, sizeof(acpText), "ACP: %d", _acp);
 }
 
 void UI::startWindow()
@@ -157,10 +145,7 @@ int UI::drawCentered(const char *text, int padding_top, int padding_bottom, int 
   return y;
 }
 
-void UI::clearDisplay()
-{
-  OLED_CLASS::clear();
-}
+void UI::clearDisplay() { OLED_CLASS::clear(); }
 
 void UI::setFont(UiFont font)
 {
@@ -176,19 +161,36 @@ void UI::setFont(UiFont font)
   }
 }
 
-void UI::drawStr(int x, int y, const char *str)
+void UI::drawStr(int x, int y, const char *str) { OLED_CLASS::drawStr(x, y, str); }
+int UI::getStrWidth(const char *str) { return OLED_CLASS::getStrWidth(str); }
+int UI::getFontHeight() { return OLED_CLASS::getFontAscent(); }
+IDisplay &UI::setMainSensor(Sensor &sn)
 {
-  OLED_CLASS::drawStr(x, y, str);
+  _mainSensor = &sn;
+  return *this;
 }
 
-int UI::getStrWidth(const char *str)
+IDisplay &UI::setFirstReserveSensor(Sensor &sn)
 {
-  return OLED_CLASS::getStrWidth(str);
+  _firstReserveSensor = &sn;
+  return *this;
 }
 
-int UI::getFontHeight()
+IDisplay &UI::setSecondReserveSensor(Sensor &sn)
 {
-  return OLED_CLASS::getFontAscent();
+  _secondReserveSensor = &sn;
+  return *this;
 }
+
+IDisplay &UI::setStreetSensor(Sensor &sn)
+{
+  _streetSensor = &sn;
+  return *this;
+}
+
+Sensor &UI::getMainSensor() { return *_mainSensor; }
+Sensor &UI::getFirstReserveSensor() { return *_firstReserveSensor; }
+Sensor &UI::getSecondReserveSensor() { return *_secondReserveSensor; }
+Sensor &UI::getStreetSensor() { return *_streetSensor; }
 
 #endif

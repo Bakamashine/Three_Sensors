@@ -16,6 +16,7 @@ class IDisplay
 {
 private:
   virtual void main();
+
 protected:
   virtual ~IDisplay() = default;
 
@@ -43,5 +44,8 @@ public:
   virtual Sensor &getSecondReserveSensor() = 0;
   virtual Sensor &getStreetSensor() = 0;
 
+// #if UI_BACKEND == UI_BACKEND_U8G2
+//   virtual OLED_CLASS &getParent() = 0;
+// #endif
   IDisplay &operator=(const IDisplay &) = delete;
 };

@@ -4,7 +4,7 @@
 enum PageId
 {
   MAIN_PAGE,
-  SELECT_SETTINGS,
+  SETTINGS,
 };
 
 class Page

@@ -3,10 +3,11 @@
 #include "debugUi.h"
 #include "sensor.h"
 #include "constants/constants.h"
-// #include <OneButton.h>
+#include <OneButton.h>
 #include "validate.h"
 #include "constants/pin.h"
 #include "settings.h"
+#include "page.h"
 
 // ui includes
 #if UI_BACKEND == UI_BACKEND_U8G2
@@ -18,8 +19,6 @@
 #define IF_SETTINGS_OPEN_RETURN ({  if (!Settings::getSettingsStatus()) return ; })
 typedef unsigned long ul;
 void sensorSetup();
-// void buttonSetup();
-// void toggleSetup();
 
 DebugUI debugUI;
 // main
@@ -40,20 +39,23 @@ IDisplay &ui = uiImpl;
 MenuUI &menuUI = ui.getMenuUI();
 Validate val;
 
-
 float temperature = 0.0F;
 float res = 0.0F;
-// OneButton btn_plus;
-// OneButton btn_minus;
+OneButton btn_plus;
+OneButton btn_minus;
+OneButton btn_menu;
 
 // bool systemHalted = false;
 // void systemHalt();
 
 // button events
-// void btnPlusOneClick();
-// void btnPlusLongPress();
-// void btnMinusOneClick();
-// void btnMinusLongPress();
+void btnPlusOneClick();
+void btnPlusLongPress();
+void btnMinusOneClick();
+void btnMinusLongPress();
+void btnMenuOnClick();
+void btnMenuLongPress();
+void btnSetup();
 
 void ledProgramStatus(bool);
 
@@ -72,14 +74,20 @@ void setup()
 
   sensorSetup();
   // toggleSetup();
-  // buttonSetup();
+  btnSetup();
 }
 
 void loop()
 {
-  DebugUI::printTitle("Main loop");
-  // btn_plus.tick();
-  // btn_minus.tick();
+  btn_plus.tick();
+  btn_minus.tick();
+  btn_menu.tick();
+  // static uint32_t lastMs = 0;
+  // const uint32_t now = millis();
+  // if (now - lastMs < TEMP_DELAY)
+  //   return;
+  // lastMs = now;
+
   temperature = main_sensor.getTemp();
   res = main_sensor.getRes();
 #ifdef DEBUG
@@ -93,13 +101,7 @@ void loop()
   debugUI.printValue("Temperature", temperature);
 #endif
   ui
-    .draw();
-  // ui
-  //     .setTemperature(temperature)
-  //     .setAcp(main_sensor.getAcp())
-  //     .setRes(res)
-  //     .setMainSensor(main_sensor)
-  //     .draw();
+      .draw();
 
   /// validate
   // int code = val.setTemperature().executePipelineValidate();
@@ -127,63 +129,76 @@ void sensorSetup()
   pinMode(STREET_SENSOR_PIN, INPUT);
 
   ui
-    .setMainSensor(main_sensor)
-    .setFirstReserveSensor(first_reserve_sensor)
-    .setSecondReserveSensor(second_reserve_sensor)
-    .setStreetSensor(street_sensor);
-
+      .setMainSensor(main_sensor)
+      .setFirstReserveSensor(first_reserve_sensor)
+      .setSecondReserveSensor(second_reserve_sensor)
+      .setStreetSensor(street_sensor);
 }
 
-// void buttonSetup()
-// {
-//   const int debounce = 20;
-//   btn_plus.setup(BUTTON_PIN_PLUS, INPUT_PULLUP, true);
-//   btn_minus.setup(BUTTON_PIN_MINUS, INPUT_PULLUP, true);
-//   btn_plus.setDebounceMs(debounce);
-//   btn_minus.setDebounceMs(debounce);
+void btnMenuOnClick()
+{
+  if (Page::getCurrentPage() == SETTINGS)
+    Page::setCurrentPage(MAIN_PAGE);
+  else
+    Page::setCurrentPage(SETTINGS);
 
-//   btn_plus.attachClick(btnPlusOneClick);
-//   btn_plus.attachLongPressStart(btnPlusLongPress);
-//   btn_minus.attachClick(btnMinusOneClick);
-//   btn_minus.attachLongPressStart(btnMinusLongPress);
-// }
+#ifdef DEBUG
+  Serial.println("menuClick");
+#endif
+}
+void btnMenuLongPress() {}
 
-// void btnPlusLongPress()
-// {
-//   IF_SETTINGS_OPEN_RETURN;
-// #ifdef DEBUG
-//   Serial.println("longPress btn_plus");
-// #endif
-//   menuUI.openValue();
-// }
+void btnPlusLongPress()
+{
+}
 
-// void btnPlusOneClick()
-// {
-//   IF_SETTINGS_OPEN_RETURN;
-//   if (menuUI.isValueOpen())
-//     menuUI.increaseValue();
-//   else
-//     menuUI.goToUp();
-// }
+void btnPlusOneClick()
+{
+  if (Page::getCurrentPage() == SETTINGS)
+  {
+    menuUI.goToUp();
+#ifdef DEBUG
+    Serial.println("goToUp");
+#endif
+  }
+}
 
-// void btnMinusOneClick()
-// {
-//   IF_SETTINGS_OPEN_RETURN;
+void btnMinusOneClick()
+{
+  if (Page::getCurrentPage() == SETTINGS)
+  {
+    menuUI.goToDown();
+#ifdef DEBUG
+    Serial.println("goToDown");
+#endif
+  }
+}
 
-//   if (menuUI.isValueOpen())
-//     menuUI.decreaseValue();
-//   else
-//     menuUI.goToDown();
-// }
+void btnMinusLongPress()
+{
+}
 
-// void btnMinusLongPress()
-// {
-//   IF_SETTINGS_OPEN_RETURN;
-// #ifdef DEBUG
-//   Serial.println("longPress btn_minus");
-// #endif
-//   menuUI.closeValue();
-// }
+void btnSetup()
+{
+  auto mode = INPUT_PULLUP;
+  bool activeLow = true;
+  const int debounce = 20;
+  pinMode(MENU_BTN_PIN, mode);
+  pinMode(PLUS_BTN_PIN, mode);
+  pinMode(MINUS_BTN_PIN, mode);
+  btn_plus.setDebounceMs(debounce);
+  btn_minus.setDebounceMs(debounce);
+  btn_menu.setDebounceMs(debounce);
+  btn_menu.setup(MENU_BTN_PIN, mode, activeLow);
+  btn_plus.setup(PLUS_BTN_PIN, mode, activeLow);
+  btn_minus.setup(MINUS_BTN_PIN, mode, activeLow);
+  btn_menu.attachClick(btnMenuOnClick);
+  btn_menu.attachDuringLongPress(btnMenuLongPress);
+  btn_plus.attachClick(btnPlusOneClick);
+  btn_plus.attachLongPressStart(btnPlusLongPress);
+  btn_minus.attachClick(btnMinusOneClick);
+  btn_minus.attachLongPressStart(btnMinusLongPress);
+}
 
 // void ledProgramStatus(bool status)
 // {
@@ -194,9 +209,4 @@ void sensorSetup()
 //   digitalWrite(BURNER_PIN, LOW);
 //   Settings::setBurnerStatus(false);
 //   Settings::setSettingsStatus(false); // show the error overlay instead of the menu
-// }
-
-// void toggleSetup()
-// {
-//   pinMode(TOGGLE_PIN, INPUT_PULLUP);
 // }

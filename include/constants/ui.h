@@ -7,27 +7,26 @@
 
 #define CENTER_X OLED_WIDTH / 2
 #define CENTER_Y OLED_HEIGHT / 2
-// columns
 
-#define U8G2_SECOND_COLUMN_X 80
-#define U8G2_FIRST_COLUMN_X 0
+/// ACP table, same geometry as constants/gyverui.h
+// (U8G2_FIRST_ROW doubles as the menu single-value position)
+// 3 columns, 5 rows (header + 4 sensors)
 
-// temperature
-#define TEMP_Y 10
-#define TEMP_X U8G2_FIRST_COLUMN_X
+#define U8G2_MARGIN_X 5
+#define U8G2_MARGIN_Y 10
+#define U8G2_COLUMN_STEP 39
+#define U8G2_ROW_STEP 12
 
-// deltaValue
-#define HYSTERESIS_Y 10
-#define HYSTERESIS_X U8G2_SECOND_COLUMN_X
+#define U8G2_FIRST_COLUMN (U8G2_MARGIN_X + 0 * U8G2_COLUMN_STEP)  // 5
+#define U8G2_SECOND_COLUMN (U8G2_MARGIN_X + 1 * U8G2_COLUMN_STEP) // 44
+#define U8G2_THIRD_COLUMN (U8G2_MARGIN_X + 2 * U8G2_COLUMN_STEP)  // 83
 
-// voltage
-#define VOLT_Y 30
-#define VOLT_X U8G2_FIRST_COLUMN_X
+#define U8G2_FIRST_ROW (U8G2_MARGIN_Y + 0 * U8G2_ROW_STEP)  // 5
+#define U8G2_SECOND_ROW (U8G2_MARGIN_Y + 1 * U8G2_ROW_STEP) // 17
+#define U8G2_THIRD_ROW (U8G2_MARGIN_Y + 2 * U8G2_ROW_STEP)  // 29
+#define U8G2_FOURTH_ROW (U8G2_MARGIN_Y + 3 * U8G2_ROW_STEP) // 41
+#define U8G2_FIFTH_ROW (U8G2_MARGIN_Y + 4 * U8G2_ROW_STEP)  // 53
 
-// user temperature
-#define USERTEMP_Y 30
-#define USERTEMP_X U8G2_SECOND_COLUMN_X
+#define ROWS 5
 
-// burner
-#define BURNER_Y 50
-#define BURNER_X 0
+/// menu selection marker, shares the ACP table rows

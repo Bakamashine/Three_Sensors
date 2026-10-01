@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <U8g2lib.h>
 #include "menuUi.h"
+#include "sensor.h"
 #include "constants/constants.h"
 #include "interface/display.h"
 
@@ -14,15 +15,12 @@ private:
   float _resistance;
   int _errorCode = 0;
   int _acp;
-  char tempText[DEFAULT_SIZE];
-  // char hysteresisText[DEFAULT_SIZE];
-  char acpText[DEFAULT_SIZE];
-  char resText[DEFAULT_SIZE];
-  // char userTempText[DEFAULT_SIZE];
-  // char burnerText[DEFAULT_SIZE];
-
-  // void setText(char*, size_t, const char*, ...);
   MenuUI *menuUI;
+
+  Sensor *_mainSensor = nullptr;
+  Sensor *_firstReserveSensor = nullptr;
+  Sensor *_secondReserveSensor = nullptr;
+  Sensor *_streetSensor = nullptr;
   void main() override;
 
 public:
@@ -43,6 +41,14 @@ public:
   IDisplay &setRes(float) override;
   MenuUI &getMenuUI() override;
   void startWindow() override;
+  IDisplay &setMainSensor(Sensor &) override;
+  IDisplay &setFirstReserveSensor(Sensor &) override;
+  IDisplay &setSecondReserveSensor(Sensor &) override;
+  IDisplay &setStreetSensor(Sensor &) override;
+  Sensor &getMainSensor() override;
+  Sensor &getFirstReserveSensor() override;
+  Sensor &getSecondReserveSensor() override;
+  Sensor &getStreetSensor() override;
   int drawCentered(const char *, int padding_top = 0, int padding_bottom = 0, int padding_left = 0, int padding_right = 0);
 };
 #endif
