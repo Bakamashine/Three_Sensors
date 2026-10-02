@@ -7,6 +7,9 @@
 #elif BTN_BACKEND == BTN_BACKEND_CUSTOM
 #include "button.h"
 #endif
+#ifdef ENABLE_COMMANDS
+#include "command.h"
+#endif
 #include "constants/pin.h"
 #include "debugUi.h"
 #include "macro/shortcut.h"
@@ -22,11 +25,6 @@
 #include "gyverui.h"
 #endif
 
-#define IF_SETTINGS_OPEN_RETURN                                               \
-  ({                                                                          \
-    if (!Settings::getSettingsStatus ())                                      \
-      return;                                                                 \
-  })
 void sensorSetup ();
 
 DebugUI debugUI;
@@ -44,9 +42,14 @@ UI uiImpl;
 #elif UI_BACKEND == UI_BACKEND_GYVER
 GyverUI<GYVER_PANEL> uiImpl;
 #endif
+
+// classes
 IDisplay &ui = uiImpl;
 MenuUI &menuUI = ui.getMenuUI ();
 Validate val;
+#ifdef ENABLE_COMMANDS
+Command cmd;
+#endif
 
 float temperature = 0.0F;
 float res = 0.0F;
@@ -74,6 +77,7 @@ void btnMenuLongPress ();
 void btnSetup ();
 
 void ledProgramStatus (bool);
+void setupCommands ();
 
 void
 setup ()
@@ -92,16 +96,35 @@ setup ()
   sensorSetup ();
   // toggleSetup();
   btnSetup ();
+#ifdef ENABLE_COMMANDS
+  setupCommands ();
+#endif
 }
 
 void
 loop ()
 {
+  // DebugUI::printTitle ("main loop");
   btn_plus.tick ();
   btn_minus.tick ();
   btn_menu.tick ();
 
-
+#ifdef ENABLE_COMMANDS
+  if (Serial.available () > 0)
+    {
+      int c_strCommand_size = 10;
+      char *c_strCommand
+          = static_cast<char *> (malloc (sizeof (char) * c_strCommand_size));
+      Serial.readString ().toCharArray (c_strCommand, c_strCommand_size);
+#ifdef DEBUG_COMMAND
+      Serial.print ("Received: '");
+      Serial.print (c_strCommand);
+      Serial.println ("'");
+#endif
+      cmd.allocate (c_strCommand_size).setCmd (c_strCommand).readCommand ();
+      cmd.freeData ();
+    }
+#endif
   temperature = main_sensor.getTemp ();
   res = main_sensor.getRes ();
 #ifdef DEBUG
@@ -253,6 +276,17 @@ btnSetup ()
       .attachLongPressStart (btnMinusLongPress);
 #endif
 }
+
+#ifdef ENABLE_COMMANDS
+void
+setupCommands ()
+{
+  cmd.setMainSensor (main_sensor)
+      .setFirstReserveSensor (first_reserve_sensor)
+      .setSecondReserveSensor (second_reserve_sensor)
+      .setStreetSensor (street_sensor);
+}
+#endif
 
 // void ledProgramStatus(bool status)
 // {

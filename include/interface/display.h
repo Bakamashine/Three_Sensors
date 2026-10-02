@@ -15,7 +15,8 @@ enum UiFont
 class IDisplay
 {
 private:
-  virtual void main ();
+  virtual void main () = 0;
+  virtual void permanent () = 0;
 
 protected:
   virtual ~IDisplay () = default;

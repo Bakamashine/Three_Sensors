@@ -63,6 +63,14 @@ UI::initDisplay (int sda, int scl)
 }
 
 void
+UI::permanent ()
+{
+  // version
+  // RAW_WRITE_ROW (U8G2_FIRST_ROW, nullptr, nullptr, VERSION, this);
+  drawStr (VERSION_X, VERSION_Y, VERSION);
+}
+
+void
 UI::initUI ()
 {
 }
@@ -114,6 +122,7 @@ UI::draw ()
   this->firstPage ();
   do
     {
+      permanent ();
       switch (Page::getCurrentPage ())
         {
         case MAIN_PAGE:

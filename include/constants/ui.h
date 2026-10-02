@@ -31,3 +31,6 @@
 
 /// menu selection marker column, left of the first table column
 #define U8G2_MENU_MARKER_X 0
+
+#define VERSION_X getWidth () - 28
+#define VERSION_Y 10

@@ -10,7 +10,6 @@
 
 int Settings::_userTemp = DEFAULT_USER_TEMP;
 bool Settings::_burnerStatus = false;
-bool Settings::_settingsStatus = false;
 bool Settings::_errorStatus = false;
 int Settings::_hysteresis = DEFAULT_HYSTERESIS;
 int Settings::_minPermOffset = MIN_PERM_OFFSET;

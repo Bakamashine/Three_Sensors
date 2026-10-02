@@ -1,4 +1,5 @@
 #include "button.h"
+#if BTN_BACKEND == BTN_BACKEND_CUSTOM
 #include "constants/constants.h"
 #include "macro/general.h"
 #include "macro/shortcut.h"
@@ -95,3 +96,5 @@ Button::tick ()
         _longPressHandle ();
     }
 }
+
+#endif

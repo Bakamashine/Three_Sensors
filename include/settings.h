@@ -5,7 +5,6 @@ class Settings
 private:
   static int _userTemp;
   static bool _burnerStatus;
-  static bool _settingsStatus;
   static bool _errorStatus;
   static int _hysteresis; // burner hysteresis deadband
   static int _maxPermOffset;

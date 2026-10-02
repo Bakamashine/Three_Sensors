@@ -22,6 +22,7 @@ private:
   Sensor *_secondReserveSensor = nullptr;
   Sensor *_streetSensor = nullptr;
   void main () override;
+  void permanent () override;
 
 public:
   UI ();

@@ -9,6 +9,10 @@
 #define MIN_T -10
 #define MAX_T 110
 
+// correction is an offset in degrees, keep it a sane displayable value
+#define MIN_CORRECT_INT (-50)
+#define MAX_CORRECT_INT 50
+
 #define MAX_ACP 1023
 #define VCC 5
 #define RESISTOR_FROM_SENSOR 2000 // 2kOm
@@ -195,6 +199,10 @@ Sensor::getRes ()
 Sensor &
 Sensor::setCorrectInt (int v)
 {
+  if (v < MIN_CORRECT_INT)
+    v = MIN_CORRECT_INT;
+  if (v > MAX_CORRECT_INT)
+    v = MAX_CORRECT_INT;
   _correctInt = v;
   return *this;
 }

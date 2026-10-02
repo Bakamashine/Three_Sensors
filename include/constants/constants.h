@@ -1,6 +1,8 @@
 #pragma once
 
-#define DEBUG
+// #define DEBUG
+#define DEBUG_COMMAND
+#define VERSION "V: 0.1"
 
 #define BOD 9600
 
@@ -31,4 +33,5 @@
 #define TEMP_DELAY 1000
 
 #define SHOW_START_WINDOW
+#define ENABLE_COMMANDS
 #define DEBOUNCE_DURATION 50
