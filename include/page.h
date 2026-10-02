@@ -12,6 +12,6 @@ class Page
 private:
   static int _currentPage; // one of PageId
 public:
-  static int getCurrentPage();
-  static void setCurrentPage(int page);
+  static int getCurrentPage ();
+  static void setCurrentPage (int page);
 };

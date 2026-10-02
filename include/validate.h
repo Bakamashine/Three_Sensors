@@ -8,6 +8,6 @@ private:
   static unsigned long mil;
 
 public:
-  Validate &setTemperature(float);
-  int executePipelineValidate();
+  Validate &setTemperature (float);
+  int executePipelineValidate ();
 };

@@ -36,7 +36,8 @@
 #define G_FOURTH_ROW (MARGIN_Y + 3 * ROW_STEP) // 41
 #define G_FIFTH_ROW (MARGIN_Y + 4 * ROW_STEP)  // 53
 
-#define G_CENTERED_X(column, text) ((column) + (COLUMN_STEP - getStrWidth(text)) / 2)
+#define G_CENTERED_X(column, text)                                            \
+  ((column) + (COLUMN_STEP - getStrWidth (text)) / 2)
 
 /// columns
 // acp

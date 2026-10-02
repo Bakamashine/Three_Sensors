@@ -20,19 +20,19 @@ private:
   bool _isValueOpen = false;
   Records _rows[MENU_ROWS_COUNT];
 
-  void buildRows();
+  void buildRows ();
 
 public:
-  explicit MenuUI(IDisplay *display);
-  void goToUp();
-  void goToDown();
-  void draw();
+  explicit MenuUI (IDisplay *display);
+  void goToUp ();
+  void goToDown ();
+  void draw ();
 
-  void setValueStatus(bool);
-  bool isValueOpen();
-  void increaseValue();
-  void decreaseValue();
+  void setValueStatus (bool);
+  bool isValueOpen ();
+  void increaseValue ();
+  void decreaseValue ();
 
-  void drawPoint();
-  void drawPreviews();
+  void drawPoint ();
+  void drawPreviews ();
 };

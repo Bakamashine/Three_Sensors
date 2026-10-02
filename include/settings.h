@@ -12,15 +12,15 @@ private:
   static int _minPermOffset;
 
 public:
-  static int getUserTemp();
-  static bool getErrorStatus();
-  static void upUserTemp();
-  static void downUserTemp();
-  static void setBurnerStatus(bool);
-  static void setHysteresis(int);
-  static int getHysteresis();
-  static int getMaxPermOffset();
-  static int getMinPermOffset();
-  static void setMaxPermOffset(int);
-  static void setMinPermOffset(int);
+  static int getUserTemp ();
+  static bool getErrorStatus ();
+  static void upUserTemp ();
+  static void downUserTemp ();
+  static void setBurnerStatus (bool);
+  static void setHysteresis (int);
+  static int getHysteresis ();
+  static int getMaxPermOffset ();
+  static int getMinPermOffset ();
+  static void setMaxPermOffset (int);
+  static void setMinPermOffset (int);
 };

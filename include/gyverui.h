@@ -5,17 +5,15 @@
 
 #include <GyverOLED.h>
 
-#include "menuUi.h"
-#include "interface/display.h"
 #include "constants/gyverui.h"
+#include "interface/display.h"
+#include "menuUi.h"
 
-template <int _TYPE,
-          int _BUFF = GYVER_BUFFER,
-          int _CONN = GYVER_CONN,
-          int8_t _CS = GYVER_CS,
-          int8_t _DC = GYVER_DC,
+template <int _TYPE, int _BUFF = GYVER_BUFFER, int _CONN = GYVER_CONN,
+          int8_t _CS = GYVER_CS, int8_t _DC = GYVER_DC,
           int8_t _RST = GYVER_RST>
-class GyverUI : public GyverOLED<_TYPE, _BUFF, _CONN, _CS, _DC, _RST>, public IDisplay
+class GyverUI : public GyverOLED<_TYPE, _BUFF, _CONN, _CS, _DC, _RST>,
+                public IDisplay
 {
   using Base = GyverOLED<_TYPE, _BUFF, _CONN, _CS, _DC, _RST>;
 
@@ -35,34 +33,34 @@ private:
   Sensor *_firstReserveSensor = nullptr;
   Sensor *_secondReserveSensor = nullptr;
   Sensor *_streetSensor = nullptr;
-  void main() override;
+  void main () override;
 
 public:
-  explicit GyverUI(uint8_t address = GYVER_ADDRESS);
-  ~GyverUI() override;
+  explicit GyverUI (uint8_t address = GYVER_ADDRESS);
+  ~GyverUI () override;
 
-  void clearDisplay() override;
-  void setFont(UiFont font) override;
-  void drawStr(int x, int y, const char *str) override;
-  int getStrWidth(const char *str) override;
-  int getFontHeight() override;
+  void clearDisplay () override;
+  void setFont (UiFont font) override;
+  void drawStr (int x, int y, const char *str) override;
+  int getStrWidth (const char *str) override;
+  int getFontHeight () override;
 
-  void initDisplay(int sda = -1, int scl = -1) override;
-  void initUI() override;
-  IDisplay &setTemperature(float) override;
-  void draw() override;
-  IDisplay &setAcp(int) override;
-  IDisplay &setRes(float) override;
-  MenuUI &getMenuUI() override;
-  void startWindow() override;
-  IDisplay &setMainSensor(Sensor &) override;
-  IDisplay &setFirstReserveSensor(Sensor &) override;
-  IDisplay &setStreetSensor(Sensor &) override;
-  IDisplay &setSecondReserveSensor(Sensor &) override;
-  Sensor &getMainSensor() override;
-  Sensor &getFirstReserveSensor() override;
-  Sensor &getSecondReserveSensor() override;
-  Sensor &getStreetSensor() override;
+  void initDisplay (int sda = -1, int scl = -1) override;
+  void initUI () override;
+  IDisplay &setTemperature (float) override;
+  void draw () override;
+  IDisplay &setAcp (int) override;
+  IDisplay &setRes (float) override;
+  MenuUI &getMenuUI () override;
+  void startWindow () override;
+  IDisplay &setMainSensor (Sensor &) override;
+  IDisplay &setFirstReserveSensor (Sensor &) override;
+  IDisplay &setStreetSensor (Sensor &) override;
+  IDisplay &setSecondReserveSensor (Sensor &) override;
+  Sensor &getMainSensor () override;
+  Sensor &getFirstReserveSensor () override;
+  Sensor &getSecondReserveSensor () override;
+  Sensor &getStreetSensor () override;
 };
 
 #endif
