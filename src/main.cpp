@@ -1,9 +1,15 @@
 #include <Arduino.h>
-#include <OneButton.h>
 
 #include "constants/constants.h"
+
+#if BTN_BACKEND == BTN_BACKEND_ONE_BUTTON
+#include <OneButton.h>
+#elif BTN_BACKEND == BTN_BACKEND_CUSTOM
+#include "button.h"
+#endif
 #include "constants/pin.h"
 #include "debugUi.h"
+#include "macro/shortcut.h"
 #include "page.h"
 #include "sensor.h"
 #include "settings.h"
@@ -21,7 +27,6 @@
     if (!Settings::getSettingsStatus ())                                      \
       return;                                                                 \
   })
-typedef unsigned long ul;
 void sensorSetup ();
 
 DebugUI debugUI;
@@ -45,9 +50,16 @@ Validate val;
 
 float temperature = 0.0F;
 float res = 0.0F;
+
+#if BTN_BACKEND == BTN_BACKEND_ONE_BUTTON
 OneButton btn_plus;
 OneButton btn_minus;
 OneButton btn_menu;
+#elif BTN_BACKEND == BTN_BACKEND_CUSTOM
+Button btn_plus (PLUS_BTN_PIN);
+Button btn_minus (MINUS_BTN_PIN);
+Button btn_menu (MENU_BTN_PIN);
+#endif
 
 // bool systemHalted = false;
 // void systemHalt();
@@ -88,11 +100,7 @@ loop ()
   btn_plus.tick ();
   btn_minus.tick ();
   btn_menu.tick ();
-  // static uint32_t lastMs = 0;
-  // const uint32_t now = millis();
-  // if (now - lastMs < TEMP_DELAY)
-  //   return;
-  // lastMs = now;
+
 
   temperature = main_sensor.getTemp ();
   res = main_sensor.getRes ();
@@ -216,18 +224,34 @@ btnSetup ()
   pinMode (MENU_BTN_PIN, mode);
   pinMode (PLUS_BTN_PIN, mode);
   pinMode (MINUS_BTN_PIN, mode);
+
+#if BTN_BACKEND == BTN_BACKEND_ONE_BUTTON
+  btn_menu.setDebounceMs (debounce);
   btn_plus.setDebounceMs (debounce);
   btn_minus.setDebounceMs (debounce);
-  btn_menu.setDebounceMs (debounce);
-  btn_menu.setup (MENU_BTN_PIN, mode, activeLow);
-  btn_plus.setup (PLUS_BTN_PIN, mode, activeLow);
-  btn_minus.setup (MINUS_BTN_PIN, mode, activeLow);
+  btn_menu.setup (MENU_BTN_PIN, activeLow, true);
+  btn_plus.setup (PLUS_BTN_PIN, activeLow, true);
+  btn_minus.setup (MINUS_BTN_PIN, activeLow, true);
   btn_menu.attachClick (btnMenuOnClick);
-  btn_menu.attachDuringLongPress (btnMenuLongPress);
+  btn_menu.attachLongPressStart (btnMenuLongPress);
   btn_plus.attachClick (btnPlusOneClick);
   btn_plus.attachLongPressStart (btnPlusLongPress);
   btn_minus.attachClick (btnMinusOneClick);
   btn_minus.attachLongPressStart (btnMinusLongPress);
+#elif BTN_BACKEND == BTN_BACKEND_CUSTOM
+  btn_menu.setup (MENU_BTN_PIN, mode, activeLow)
+      .setDebounceMs (debounce)
+      .attachClick (btnMenuOnClick)
+      .attachLongPressStart (btnMenuLongPress);
+  btn_plus.setup (PLUS_BTN_PIN, mode, activeLow)
+      .setDebounceMs (debounce)
+      .attachClick (btnPlusOneClick)
+      .attachLongPressStart (btnPlusLongPress);
+  btn_minus.setup (MINUS_BTN_PIN, mode, activeLow)
+      .setDebounceMs (debounce)
+      .attachClick (btnMinusOneClick)
+      .attachLongPressStart (btnMinusLongPress);
+#endif
 }
 
 // void ledProgramStatus(bool status)

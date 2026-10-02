@@ -80,8 +80,7 @@ const unsigned char epd_bitmap_Capture[] PROGMEM = {
 };
 
 UI_CTOR
-GyverUI (uint8_t address)
-    : Base (address)
+GyverUI (uint8_t address) : Base (address)
 {
   tempText[0] = '\0';
   resText[0] = '\0';
