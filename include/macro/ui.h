@@ -17,6 +17,7 @@
     }                                                                         \
   while (0)
 
+// display temperature via class
 #define AT_WRITE_ROW(row, text, p_cls)                                        \
   do                                                                          \
     {                                                                         \
@@ -24,6 +25,18 @@
       char tempBuf[8];                                                        \
       snprintf (tempBuf, sizeof (tempBuf), "%d", (p_cls).getTemp ());         \
       snprintf (acpBuf, sizeof (acpBuf), "%d", (p_cls).getAcp ());            \
+      RAW_WRITE_ROW (row, text, acpBuf, tempBuf, this);                       \
+    }                                                                         \
+  while (0)
+
+// display temperature as number
+#define N_AT_WRITE_ROW(row, text, temp, acp)                                  \
+  do                                                                          \
+    {                                                                         \
+      char acpBuf[8];                                                         \
+      char tempBuf[8];                                                        \
+      snprintf (tempBuf, sizeof (tempBuf), "%d", temp);                       \
+      snprintf (acpBuf, sizeof (acpBuf), "%d", acp);                          \
       RAW_WRITE_ROW (row, text, acpBuf, tempBuf, this);                       \
     }                                                                         \
   while (0)

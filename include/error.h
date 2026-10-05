@@ -2,11 +2,17 @@
 
 class Error
 {
+
 private:
-  int _code = 0;
+  static bool _errorStatus;
+  static int _errorCode;
+
+protected:
+  static void setErrorStatus (bool);
+  static void setErrorCode (int);
 
 public:
-  Error ();
-  static const char *getErrorMessage (int code);
-  void setErrorCodeAndStatus (int code);
+  static bool getErrorStatus ();
+  static const char *getStaticErrorMessage (int code);
+  static const char *getErrorMessage ();
 };

@@ -97,21 +97,23 @@ UI::main ()
   // rows
 
   // main sensor
-  if (_mainSensor)
-    AT_WRITE_ROW (U8G2_SECOND_ROW, PREVIEW_TEMP, *_mainSensor);
+  if (_mainTemp)
+    // AT_WRITE_ROW (U8G2_SECOND_ROW, PREVIEW_TEMP, *_mainSensor);
+    N_AT_WRITE_ROW (U8G2_SECOND_ROW, PREVIEW_TEMP, _mainTemp, _mainAcp);
 
   // first reserve sensor
-  if (_firstReserveSensor)
-    AT_WRITE_ROW (U8G2_THIRD_ROW, PREVIEW_FIRST_RESERVE, *_firstReserveSensor);
+  if (_firstResTemp)
+    N_AT_WRITE_ROW (U8G2_THIRD_ROW, PREVIEW_FIRST_RESERVE, _firstResTemp,
+                    _firstResAcp);
 
   // second reserve sensor
-  if (_secondReserveSensor)
-    AT_WRITE_ROW (U8G2_FOURTH_ROW, PREVIEW_SECOND_RESERVE,
-                  *_secondReserveSensor);
+  if (_secondResTemp)
+    N_AT_WRITE_ROW (U8G2_FOURTH_ROW, PREVIEW_SECOND_RESERVE, _secondResTemp,
+                    _secondResAcp);
 
   // street sensor
-  if (_streetSensor)
-    AT_WRITE_ROW (U8G2_FIFTH_ROW, PREVIEW_STREET, *_streetSensor);
+  if (_streetTemp)
+    N_AT_WRITE_ROW (U8G2_FIFTH_ROW, PREVIEW_STREET, _streetTemp, _streetAcp);
 }
 
 void
@@ -131,6 +133,8 @@ UI::draw ()
         case SETTINGS:
           menuUI->draw ();
           break;
+        case ERROR:
+          error ();
         default:
           break;
         }
@@ -150,20 +154,6 @@ UI::startWindow ()
     }
   while (this->nextPage ());
   delay (START_MENU_DURATION);
-}
-
-IDisplay &
-UI::setAcp (int acp)
-{
-  _acp = acp;
-  return *this;
-}
-
-IDisplay &
-UI::setRes (float v)
-{
-  _resistance = v;
-  return *this;
 }
 
 int
@@ -213,53 +203,13 @@ UI::getFontHeight ()
 {
   return OLED_CLASS::getFontAscent ();
 }
-IDisplay &
-UI::setMainSensor (Sensor &sn)
-{
-  _mainSensor = &sn;
-  return *this;
-}
 
-IDisplay &
-UI::setFirstReserveSensor (Sensor &sn)
+void
+UI::error ()
 {
-  _firstReserveSensor = &sn;
-  return *this;
-}
-
-IDisplay &
-UI::setSecondReserveSensor (Sensor &sn)
-{
-  _secondReserveSensor = &sn;
-  return *this;
-}
-
-IDisplay &
-UI::setStreetSensor (Sensor &sn)
-{
-  _streetSensor = &sn;
-  return *this;
-}
-
-Sensor &
-UI::getMainSensor ()
-{
-  return *_mainSensor;
-}
-Sensor &
-UI::getFirstReserveSensor ()
-{
-  return *_firstReserveSensor;
-}
-Sensor &
-UI::getSecondReserveSensor ()
-{
-  return *_secondReserveSensor;
-}
-Sensor &
-UI::getStreetSensor ()
-{
-  return *_streetSensor;
+  const char *error_message = Error::getErrorMessage ();
+  drawStr (_CENTER_X (*this, error_message), _CENTER_Y (*this), error_message);
+  // free (error_message);
 }
 
 #endif

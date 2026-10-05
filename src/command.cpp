@@ -140,6 +140,8 @@ Command::runCmd ()
 #endif
     }
   // sens1=<int> - set the correction added to the main sensor reading
+
+  // !FIXME: Critical Error. Maybe memory leak
   else if (strcmp (_first_slice, "sens1") == 0)
     {
       _mainSensor->setCorrectInt (second_slice_value);

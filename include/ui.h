@@ -3,6 +3,7 @@
 #if UI_BACKEND == UI_BACKEND_U8G2
 #include "constants/constants.h"
 #include "interface/display.h"
+#include "macro/getter_setter_sensor.h"
 #include "menuUi.h"
 #include "sensor.h"
 #include <U8g2lib.h>
@@ -17,10 +18,9 @@ private:
   int _acp;
   MenuUI *menuUI;
 
-  Sensor *_mainSensor = nullptr;
-  Sensor *_firstReserveSensor = nullptr;
-  Sensor *_secondReserveSensor = nullptr;
-  Sensor *_streetSensor = nullptr;
+  SENSOR_MEMBERS;
+  SENSOR_TEMP_MEMBERS;
+  SENSOR_ACP_MEMBERS;
   void main () override;
   void permanent () override;
 
@@ -38,18 +38,13 @@ public:
   void initUI () override;
   IDisplay &setTemperature (float) override;
   void draw () override;
-  IDisplay &setAcp (int) override;
-  IDisplay &setRes (float) override;
   MenuUI &getMenuUI () override;
   void startWindow () override;
-  IDisplay &setMainSensor (Sensor &) override;
-  IDisplay &setFirstReserveSensor (Sensor &) override;
-  IDisplay &setSecondReserveSensor (Sensor &) override;
-  IDisplay &setStreetSensor (Sensor &) override;
-  Sensor &getMainSensor () override;
-  Sensor &getFirstReserveSensor () override;
-  Sensor &getSecondReserveSensor () override;
-  Sensor &getStreetSensor () override;
+  SENSOR_GETTER_SETTER (IDisplay);
+  O_SENSOR_TEMP_GETTER_SETTER (IDisplay);
+  O_SENSOR_ACP_GETTER_SETTER (IDisplay);
+
+  void error () override;
   int drawCentered (const char *, int padding_top = 0, int padding_bottom = 0,
                     int padding_left = 0, int padding_right = 0);
 };

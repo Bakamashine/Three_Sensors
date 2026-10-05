@@ -10,7 +10,6 @@
 
 int Settings::_userTemp = DEFAULT_USER_TEMP;
 bool Settings::_burnerStatus = false;
-bool Settings::_errorStatus = false;
 int Settings::_hysteresis = DEFAULT_HYSTERESIS;
 int Settings::_minPermOffset = MIN_PERM_OFFSET;
 int Settings::_maxPermOffset = MAX_PERM_OFFSET;
@@ -41,11 +40,6 @@ Settings::setBurnerStatus (bool st)
 {
   _burnerStatus = st;
 }
-bool
-Settings::getErrorStatus ()
-{
-  return _errorStatus;
-}
 void
 Settings::setHysteresis (int v)
 {
@@ -59,7 +53,8 @@ Settings::getHysteresis ()
 void
 Settings::setMaxPermOffset (int v)
 {
-  _maxPermOffset = v;
+  if (v > _minPermOffset)
+    _maxPermOffset = v;
 }
 int
 Settings::getMaxPermOffset ()
@@ -69,7 +64,8 @@ Settings::getMaxPermOffset ()
 void
 Settings::setMinPermOffset (int v)
 {
-  _minPermOffset = v;
+  if (v < _maxPermOffset)
+    _minPermOffset = v;
 }
 int
 Settings::getMinPermOffset ()

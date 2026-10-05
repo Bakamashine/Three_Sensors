@@ -1,69 +1,82 @@
 #include "validate.h"
-#include "constants/settings.h"
+#include "constants/error.h"
+#include "helper.h"
 #include "settings.h"
 #include <Arduino.h>
 
-Validate &
-Validate::setTemperature (float temp)
+int
+Validate::checkSensors ()
 {
-  temperature = temp;
-  return *this;
+  /*
+  codes:
+  100 - all sensors agree
+  101 - main sensor is defective
+  102 - first reserve sensor is defective
+  103 - second reserve sensor is defective
+
+  _streetTemp is deliberately NOT cross-checked: it measures a different
+  environment, so a legitimate difference there would trip the check
+  constantly. Code 104 stays reserved for it in case that ever changes.
+  */
+  if (_firstResTemp + PERMITTED_TEMP_DIFFERENCE <= _mainTemp
+      || _secondResTemp + PERMITTED_TEMP_DIFFERENCE <= _mainTemp)
+    {
+      return 101;
+    }
+  if (_mainTemp + PERMITTED_TEMP_DIFFERENCE <= _firstResTemp
+      || _secondResTemp + PERMITTED_TEMP_DIFFERENCE <= _firstResTemp)
+    {
+      return 102;
+    }
+  if (_mainTemp + PERMITTED_TEMP_DIFFERENCE <= _secondResTemp
+      || _firstResTemp + PERMITTED_TEMP_DIFFERENCE <= _secondResTemp)
+    {
+      return 103;
+    }
+
+  return 100; // no error
 }
 
-unsigned long Validate::mil = 0;
-
 int
-Validate::executePipelineValidate ()
+Validate::checkTemp ()
 {
-  int code = Settings::getErrorStatus ();
-  if (code > 0)
-    return code;
-  // 1 - closing, 2 - break, 3 - burner is broken
-  bool errorOverheat = false;
-  bool errorUnderheat = false;
+  // street sensor excluded on purpose, see checkSensors()
+  int16_t temp[] = { _mainTemp, _firstResTemp, _secondResTemp };
+  int16_t avarageVal
+      = getAvarageValue (temp, sizeof (temp) / sizeof (temp[0]));
 
-  // overheat temperature
-  if (temperature >= MAX_PERMITTED_TEMP)
+  // the bounds themselves are valid readings, so compare strictly
+  if (Settings::getMaxPermOffset () < avarageVal)
     {
-      errorOverheat = true;
+      return 201; // average too hot
     }
-  else if (temperature <= MAX_PERMITTED_TEMP - DEFAULT_HYSTERESIS)
+  if (Settings::getMinPermOffset () > avarageVal)
     {
-      errorOverheat = false;
+      return 202; // average too cold
     }
 
-  // low temperature
-  if (temperature <= MIN_PERMITTED_TEMP)
+  return 100; // no error
+}
+
+void
+Validate::pipeline ()
+{
+  // a disagreement between sensors is more urgent than a slow drift
+  int code = checkSensors ();
+  if (code <= 100)
     {
-      errorUnderheat = true;
-    }
-  else if (temperature >= MIN_PERMITTED_TEMP + DEFAULT_HYSTERESIS)
-    {
-      errorUnderheat = false;
+      code = checkTemp ();
     }
 
-  if (errorOverheat)
-    code = 1;
-
-  if (errorUnderheat)
-    code = 2;
-
-  if (code > 0)
-    setErrorCodeAndStatus (code);
-
-  if (code > 0)
+  if (code > 100)
     {
-      if (mil == 0)
-        mil = millis ();
-      if (millis () - mil >= ERROR_PERIOD)
-        {
-          code = 3;
-          setErrorCodeAndStatus (code);
-        }
+      Error::setErrorStatus (true);
+      Error::setErrorCode (code);
+      return;
     }
-  else
-    {
-      mil = 0;
-    }
-  return code;
+
+  // readings are fine again: drop a previously latched error, otherwise the
+  // system would stay halted forever after a single bad reading
+  Error::setErrorStatus (false);
+  Error::setErrorCode (0);
 }

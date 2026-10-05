@@ -1,13 +1,1 @@
-#pragma once
-#include "error.h"
-
-class Validate : public Error
-{
-private:
-  float temperature = 0.0F;
-  static unsigned long mil;
-
-public:
-  Validate &setTemperature (float);
-  int executePipelineValidate ();
-};
+#pragma once#include "error.h"#include "macro/getter_setter_sensor.h"class Validate : public Error{private:  SENSOR_TEMP_MEMBERS;public:  SENSOR_TEMP_GETTER_SETTER (Validate);  int checkSensors ();  int checkTemp ();  void pipeline ();};

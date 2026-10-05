@@ -23,12 +23,12 @@
             int8_t _RST>                                                      \
   ReturnType GyverUI<_TYPE, _BUFF, _CONN, _CS, _DC, _RST>::
 
-// #define AT_WRITE_ROW(row, text, acp, t)                                  \
-//   do                                                                    \
-//   {                                                                     \
-//     if (text) drawStr(G_CENTERED_X(G_FIRST_COLUMN, text), row, text);    \
-//     drawStr(G_CENTERED_X(G_ACP_X, acp), row, acp);                       \
-//     drawStr(G_CENTERED_X(G_TEMP_X, t), row, t);                          \
+// #define AT_WRITE_ROW(row, text, acp, t)
+//   do
+//   {
+//     if (text) drawStr(G_CENTERED_X(G_FIRST_COLUMN, text), row, text);
+//     drawStr(G_CENTERED_X(G_ACP_X, acp), row, acp);
+//     drawStr(G_CENTERED_X(G_TEMP_X, t), row, t);
 //   } while (0)
 
 // raw writing row
@@ -226,46 +226,6 @@ getStrWidth (const char *str)
 
 UI_METHOD (int)
 getFontHeight () { return 8 * _fontScale; }
-
-UI_METHOD (IDisplay &)
-setMainSensor (Sensor &sn)
-{
-  _mainSensor = &sn;
-  return *this;
-}
-
-UI_METHOD (IDisplay &)
-setFirstReserveSensor (Sensor &sn)
-{
-  _firstReserveSensor = &sn;
-  return *this;
-}
-
-UI_METHOD (IDisplay &)
-setStreetSensor (Sensor &sn)
-{
-  _streetSensor = &sn;
-  return *this;
-}
-
-UI_METHOD (Sensor &)
-getMainSensor () { return *_mainSensor; }
-
-UI_METHOD (Sensor &)
-getFirstReserveSensor () { return *_firstReserveSensor; }
-
-UI_METHOD (Sensor &)
-getStreetSensor () { return *_streetSensor; }
-
-UI_METHOD (IDisplay &)
-setSecondReserveSensor (Sensor &sn)
-{
-  _secondReserveSensor = &sn;
-  return *this;
-}
-
-UI_METHOD (Sensor &)
-getSecondReserveSensor () { return *_secondReserveSensor; }
 
 template class GyverUI<GYVER_PANEL, GYVER_BUFFER, GYVER_CONN, GYVER_CS,
                        GYVER_DC, GYVER_RST>;

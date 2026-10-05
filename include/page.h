@@ -5,6 +5,7 @@ enum PageId
 {
   MAIN_PAGE,
   SETTINGS,
+  ERROR
 };
 
 class Page

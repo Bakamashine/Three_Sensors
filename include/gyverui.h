@@ -7,6 +7,7 @@
 
 #include "constants/gyverui.h"
 #include "interface/display.h"
+#include "macro/getter_setter_sensor.h"
 #include "menuUi.h"
 
 template <int _TYPE, int _BUFF = GYVER_BUFFER, int _CONN = GYVER_CONN,
@@ -29,10 +30,7 @@ private:
   MenuUI *menuUI = nullptr;
   uint8_t _fontScale = 1;
 
-  Sensor *_mainSensor = nullptr;
-  Sensor *_firstReserveSensor = nullptr;
-  Sensor *_secondReserveSensor = nullptr;
-  Sensor *_streetSensor = nullptr;
+  SENSOR_MEMBERS;
   void main () override;
 
 public:
@@ -53,14 +51,7 @@ public:
   IDisplay &setRes (float) override;
   MenuUI &getMenuUI () override;
   void startWindow () override;
-  IDisplay &setMainSensor (Sensor &) override;
-  IDisplay &setFirstReserveSensor (Sensor &) override;
-  IDisplay &setStreetSensor (Sensor &) override;
-  IDisplay &setSecondReserveSensor (Sensor &) override;
-  Sensor &getMainSensor () override;
-  Sensor &getFirstReserveSensor () override;
-  Sensor &getSecondReserveSensor () override;
-  Sensor &getStreetSensor () override;
+  SENSOR_GETTER_SETTER (IDisplay);
 };
 
 #endif

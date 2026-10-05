@@ -2,27 +2,42 @@
 
 #include "constants/constants.h"
 
-#if BTN_BACKEND == BTN_BACKEND_ONE_BUTTON
-#include <OneButton.h>
-#elif BTN_BACKEND == BTN_BACKEND_CUSTOM
-#include "button.h"
-#endif
 #ifdef ENABLE_COMMANDS
 #include "command.h"
 #endif
 #include "constants/pin.h"
 #include "debugUi.h"
+#include "error.h"
 #include "macro/shortcut.h"
 #include "page.h"
 #include "sensor.h"
 #include "settings.h"
-#include "validate.h"
+
+// button classes
+#if BTN_BACKEND == BTN_BACKEND_ONE_BUTTON_FULL
+#include <OneButton.h>
+#define BTN_CLASS OneButton
+#elif BTN_BACKEND == BTN_BACKEND_ONE_BUTTON_TINY
+#include <OneButtonTiny.h>
+#define BTN_CLASS OneButtonTiny
+#elif BTN_BACKEND == BTN_BACKEND_CUSTOM
+#include "button.h"
+#define BTN_CLASS Button
+#endif
 
 // ui includes
 #if UI_BACKEND == UI_BACKEND_U8G2
 #include "ui.h"
+UI uiImpl;
 #elif UI_BACKEND == UI_BACKEND_GYVER
 #include "gyverui.h"
+GyverUI<GYVER_PANEL> uiImpl;
+#endif
+
+#ifdef ENABLE_VALIDATE
+#include "validate.h"
+Validate validate;
+void validateSetup ();
 #endif
 
 void sensorSetup ();
@@ -33,39 +48,33 @@ DebugUI debugUI;
 // reserve 2
 // street
 Sensor main_sensor (MAIN_SENSOR_PIN);
-Sensor first_reserve_sensor (FIRST_RESERVE_SENSOR_PIN);
-Sensor second_reserve_sensor (SECOND_RESERVE_SENSOR_PIN);
+Sensor first_res_sensor (FIRST_RESERVE_SENSOR_PIN);
+Sensor second_res_sensor (SECOND_RESERVE_SENSOR_PIN);
 Sensor street_sensor (STREET_SENSOR_PIN);
-
-#if UI_BACKEND == UI_BACKEND_U8G2
-UI uiImpl;
-#elif UI_BACKEND == UI_BACKEND_GYVER
-GyverUI<GYVER_PANEL> uiImpl;
-#endif
 
 // classes
 IDisplay &ui = uiImpl;
 MenuUI &menuUI = ui.getMenuUI ();
-Validate val;
 #ifdef ENABLE_COMMANDS
 Command cmd;
 #endif
 
-float temperature = 0.0F;
-float res = 0.0F;
+int16_t main_temp = 0;
+int16_t first_res_temp = 0;
+int16_t second_res_temp = 0;
+int16_t street_res_temp = 0;
 
-#if BTN_BACKEND == BTN_BACKEND_ONE_BUTTON
-OneButton btn_plus;
-OneButton btn_minus;
-OneButton btn_menu;
-#elif BTN_BACKEND == BTN_BACKEND_CUSTOM
-Button btn_plus (PLUS_BTN_PIN);
-Button btn_minus (MINUS_BTN_PIN);
-Button btn_menu (MENU_BTN_PIN);
-#endif
+int main_acp = 0;
+int first_res_acp = 0;
+int second_res_acp = 0;
+int street_res_acp = 0;
 
-// bool systemHalted = false;
-// void systemHalt();
+BTN_CLASS btn_plus (PLUS_BTN_PIN);
+BTN_CLASS btn_minus (MINUS_BTN_PIN);
+BTN_CLASS btn_menu (MENU_BTN_PIN);
+
+bool systemHalted = false;
+void haltSystem ();
 
 // button events
 void btnPlusOneClick ();
@@ -77,7 +86,11 @@ void btnMenuLongPress ();
 void btnSetup ();
 
 void ledProgramStatus (bool);
+void ledSetup ();
 void setupCommands ();
+#ifdef ENABLE_LED_DEBUG
+void ledDebug ();
+#endif
 
 void
 setup ()
@@ -99,15 +112,46 @@ setup ()
 #ifdef ENABLE_COMMANDS
   setupCommands ();
 #endif
+  // burner / error indicator pins; haltSystem() drives these unconditionally,
+  // so they must be configured even when ENABLE_LED_DEBUG is off
+  ledSetup ();
+#ifdef ENABLE_VALIDATE
+  // validateSetup ();
+#endif
 }
 
 void
 loop ()
 {
+#ifdef ENABLE_LED_DEBUG
+  ledDebug ();
+#endif
   // DebugUI::printTitle ("main loop");
   btn_plus.tick ();
   btn_minus.tick ();
   btn_menu.tick ();
+
+  // setting temperature and acp
+  main_temp = main_sensor.getTemp ();
+  first_res_temp = first_res_sensor.getTemp ();
+  second_res_temp = second_res_sensor.getTemp ();
+  street_res_temp = street_sensor.getTemp ();
+  main_acp = main_sensor.getAcp ();
+  first_res_acp = first_res_sensor.getAcp ();
+  second_res_acp = second_res_sensor.getAcp ();
+  street_res_acp = street_sensor.getAcp ();
+
+  // --- Температуры ---
+  // DebugUI::printValue ("main_temp", main_temp);
+  // DebugUI::printValue ("first_res_temp", first_res_temp);
+  // DebugUI::printValue ("second_res_temp", second_res_temp);
+  // DebugUI::printValue ("street_res_temp", street_res_temp);
+
+  // --- ACP ---
+  // DebugUI::printValue ("main_acp", main_acp);
+  // DebugUI::printValue ("first_res_acp", first_res_acp);
+  // DebugUI::printValue ("second_res_acp", second_res_acp);
+  DebugUI::printValue ("street_res_acp", street_res_acp);
 
 #ifdef ENABLE_COMMANDS
   if (Serial.available () > 0)
@@ -125,35 +169,38 @@ loop ()
       cmd.freeData ();
     }
 #endif
-  temperature = main_sensor.getTemp ();
-  res = main_sensor.getRes ();
-#ifdef DEBUG
-  // Serial.println(temp.getVolt());
-  Serial.print ("Resistance: ");
-  Serial.println (res);
-  // Serial.println(temperature);
-  // debugUI.fprintValue("Volt", temp.getVolt());
-  // debugUI.fprintValue("Resistance", temp.getRes());
-  debugUI.printValue ("ACP", main_sensor.getAcp ());
-  debugUI.printValue ("Temperature", temperature);
+  ui.setMainTemp (main_temp)
+      .setFirstResTemp (first_res_temp)
+      .setSecondResTemp (second_res_temp)
+      .setStreetTemp (street_res_temp)
+      .setMainAcp (main_acp)
+      .setFirstResAcp (first_res_acp)
+      .setSecondResAcp (second_res_acp)
+      .setStreetAcp (street_res_acp)
+      .draw ();
+
+#ifdef ENABLE_VALIDATE
+  validate.setMainTemp (main_temp)
+      .setFirstResTemp (first_res_temp)
+      .setSecondResTemp (second_res_temp)
+      .setStreetTemp (street_res_temp)
+      .pipeline ();
+  if (Error::getErrorStatus ())
+    haltSystem ();
 #endif
-  ui.draw ();
+  // Settings::setErrorStatus (code);
 
-  /// validate
-  // int code = val.setTemperature().executePipelineValidate();
-  // Settings::setErrorStatus(code);
-  // if (code>0) ui.setError(code);
+  // burner
+  if (!systemHalted)
+    {
 
-  /// burner
-  // if (!systemHalted)
-  // {
-  //   if (temp.getTemp() <= Settings::getUserTemp() -
-  //   Settings::getHysteresis())
-  //   {
-  //     Settings::setBurnerStatus(true);
+      // if (temp.getTemp() <= Settings::getUserTemp() -
+      // Settings::getHysteresis())
+      // {
+      //   Settings::setBurnerStatus(true);
 
-  //   }
-  // }
+      // }
+    }
 
   // Settings::setSettingsStatus(digitalRead(TOGGLE_PIN) == HIGH);
 }
@@ -167,8 +214,8 @@ sensorSetup ()
   pinMode (STREET_SENSOR_PIN, INPUT);
 
   ui.setMainSensor (main_sensor)
-      .setFirstReserveSensor (first_reserve_sensor)
-      .setSecondReserveSensor (second_reserve_sensor)
+      .setFirstReserveSensor (first_res_sensor)
+      .setSecondReserveSensor (second_res_sensor)
       .setStreetSensor (street_sensor);
 }
 
@@ -241,26 +288,32 @@ btnMinusLongPress ()
 void
 btnSetup ()
 {
-  auto mode = INPUT_PULLUP;
+#if BTN_BACKEND != BTN_BACKEND_ONE_BUTTON_TINY
   bool activeLow = true;
+#endif
   const int debounce = 20;
+  auto mode = INPUT_PULLUP;
   pinMode (MENU_BTN_PIN, mode);
   pinMode (PLUS_BTN_PIN, mode);
   pinMode (MINUS_BTN_PIN, mode);
 
-#if BTN_BACKEND == BTN_BACKEND_ONE_BUTTON
+#if BTN_BACKEND == BTN_BACKEND_ONE_BUTTON_FULL                                \
+    || BTN_BACKEND == BTN_BACKEND_ONE_BUTTON_TINY
   btn_menu.setDebounceMs (debounce);
   btn_plus.setDebounceMs (debounce);
   btn_minus.setDebounceMs (debounce);
+#if BTN_BACKEND == BTN_BACKEND_ONE_BUTTON_FULL
   btn_menu.setup (MENU_BTN_PIN, activeLow, true);
   btn_plus.setup (PLUS_BTN_PIN, activeLow, true);
   btn_minus.setup (MINUS_BTN_PIN, activeLow, true);
+#endif
   btn_menu.attachClick (btnMenuOnClick);
   btn_menu.attachLongPressStart (btnMenuLongPress);
   btn_plus.attachClick (btnPlusOneClick);
   btn_plus.attachLongPressStart (btnPlusLongPress);
   btn_minus.attachClick (btnMinusOneClick);
   btn_minus.attachLongPressStart (btnMinusLongPress);
+
 #elif BTN_BACKEND == BTN_BACKEND_CUSTOM
   btn_menu.setup (MENU_BTN_PIN, mode, activeLow)
       .setDebounceMs (debounce)
@@ -274,6 +327,7 @@ btnSetup ()
       .setDebounceMs (debounce)
       .attachClick (btnMinusOneClick)
       .attachLongPressStart (btnMinusLongPress);
+
 #endif
 }
 
@@ -282,20 +336,53 @@ void
 setupCommands ()
 {
   cmd.setMainSensor (main_sensor)
-      .setFirstReserveSensor (first_reserve_sensor)
-      .setSecondReserveSensor (second_reserve_sensor)
+      .setFirstReserveSensor (first_res_sensor)
+      .setSecondReserveSensor (second_res_sensor)
       .setStreetSensor (street_sensor);
 }
 #endif
 
-// void ledProgramStatus(bool status)
+void
+ledSetup ()
+{
+  // burner
+  pinMode (BURNER_PIN, OUTPUT);
+
+  // error
+  pinMode (ERROR_PIN, OUTPUT);
+}
+
+#ifdef ENABLE_LED_DEBUG
+void
+ledDebug ()
+{
+
+  digitalWrite (BURNER_PIN, HIGH);
+  digitalWrite (ERROR_PIN, LOW);
+  // if (digitalRead (BURNER_PIN) == HIGH)
+  //   {
+  //     digitalWrite (BURNER_PIN, LOW);
+  //     digitalWrite (ERROR_PIN, LOW);
+  //   }
+}
+#endif
+
+// void
+// ledProgramStatus(bool status)
 // {
+
 // }
 
-// void haltSystem()
-// {
-//   digitalWrite(BURNER_PIN, LOW);
-//   Settings::setBurnerStatus(false);
-//   Settings::setSettingsStatus(false); // show the error overlay instead of
-//   the menu
-// }
+void
+haltSystem ()
+{
+  if (!systemHalted)
+    {
+      Serial.println ("ERROR");
+      digitalWrite (BURNER_PIN, LOW);
+      digitalWrite (ERROR_PIN, HIGH);
+      Settings::setBurnerStatus (false);
+    }
+  systemHalted = true;
+  Page::setCurrentPage (ERROR);
+}

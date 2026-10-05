@@ -15,3 +15,6 @@
 #define MENU_BTN_PIN 12
 #define PLUS_BTN_PIN 11
 #define MINUS_BTN_PIN 10
+
+#define BURNER_PIN 4
+#define ERROR_PIN 3
