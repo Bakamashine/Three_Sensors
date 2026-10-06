@@ -8,33 +8,11 @@
 #define MAX_PERM_OFFSET 95
 #define MIN_PERM_OFFSET 15
 
-int Settings::_userTemp = DEFAULT_USER_TEMP;
 bool Settings::_burnerStatus = false;
 int Settings::_hysteresis = DEFAULT_HYSTERESIS;
 int Settings::_minPermOffset = MIN_PERM_OFFSET;
 int Settings::_maxPermOffset = MAX_PERM_OFFSET;
 
-void
-Settings::upUserTemp ()
-{
-  if (Sensor::getMaxT () <= _userTemp)
-    return;
-  _userTemp++;
-}
-
-void
-Settings::downUserTemp ()
-{
-  if (Sensor::getMinT () >= _userTemp)
-    return;
-  _userTemp--;
-}
-
-int
-Settings::getUserTemp ()
-{
-  return _userTemp;
-}
 void
 Settings::setBurnerStatus (bool st)
 {

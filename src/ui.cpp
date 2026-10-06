@@ -14,6 +14,7 @@
 #include <U8g2lib.h>
 #include <stdarg.h>
 
+#ifdef SHOW_START_WINDOW
 // 'Capture', 70x40px LOGO
 const unsigned char epd_bitmap_Capture[] PROGMEM = {
   0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff,
@@ -46,6 +47,7 @@ const unsigned char epd_bitmap_Capture[] PROGMEM = {
   0xff, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f
 };
 
+#endif
 UI::UI () : OLED_CLASS (U8G2_R0, /* reset=*/U8X8_PIN_NONE)
 {
   menuUI = new MenuUI (this);
@@ -65,8 +67,6 @@ UI::initDisplay (int sda, int scl)
 void
 UI::permanent ()
 {
-  // version
-  // RAW_WRITE_ROW (U8G2_FIRST_ROW, nullptr, nullptr, VERSION, this);
   drawStr (VERSION_X, VERSION_Y, VERSION);
 }
 
@@ -81,13 +81,6 @@ UI::getMenuUI ()
   return *menuUI;
 }
 
-IDisplay &
-UI::setTemperature (float temp)
-{
-  this->_temperature = temp;
-  return *this;
-}
-
 void
 UI::main ()
 {
@@ -98,7 +91,6 @@ UI::main ()
 
   // main sensor
   if (_mainTemp)
-    // AT_WRITE_ROW (U8G2_SECOND_ROW, PREVIEW_TEMP, *_mainSensor);
     N_AT_WRITE_ROW (U8G2_SECOND_ROW, PREVIEW_TEMP, _mainTemp, _mainAcp);
 
   // first reserve sensor
@@ -119,7 +111,6 @@ UI::main ()
 void
 UI::draw ()
 {
-  // initUI();
   setFont (FONT_UI);
   this->firstPage ();
   do
@@ -135,6 +126,7 @@ UI::draw ()
           break;
         case ERROR:
           error ();
+          break;
         default:
           break;
         }
@@ -145,6 +137,7 @@ UI::draw ()
 void
 UI::startWindow ()
 {
+#ifdef SHOW_START_WINDOW
   setFont (FONT_START);
   this->firstPage ();
   do
@@ -154,6 +147,7 @@ UI::startWindow ()
     }
   while (this->nextPage ());
   delay (START_MENU_DURATION);
+#endif
 }
 
 int
@@ -209,7 +203,6 @@ UI::error ()
 {
   const char *error_message = Error::getErrorMessage ();
   drawStr (_CENTER_X (*this, error_message), _CENTER_Y (*this), error_message);
-  // free (error_message);
 }
 
 #endif

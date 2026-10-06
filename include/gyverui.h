@@ -45,10 +45,7 @@ public:
 
   void initDisplay (int sda = -1, int scl = -1) override;
   void initUI () override;
-  IDisplay &setTemperature (float) override;
   void draw () override;
-  IDisplay &setAcp (int) override;
-  IDisplay &setRes (float) override;
   MenuUI &getMenuUI () override;
   void startWindow () override;
   SENSOR_GETTER_SETTER (IDisplay);

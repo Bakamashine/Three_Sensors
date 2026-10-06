@@ -41,9 +41,8 @@ int
 Validate::checkTemp ()
 {
   // street sensor excluded on purpose, see checkSensors()
-  int16_t temp[] = { _mainTemp, _firstResTemp, _secondResTemp };
-  int16_t avarageVal
-      = getAvarageValue (temp, sizeof (temp) / sizeof (temp[0]));
+  float temp[] = { _mainTemp, _firstResTemp, _secondResTemp };
+  float avarageVal = getAvarageValue (temp, sizeof (temp) / sizeof (temp[0]));
 
   // the bounds themselves are valid readings, so compare strictly
   if (Settings::getMaxPermOffset () < avarageVal)

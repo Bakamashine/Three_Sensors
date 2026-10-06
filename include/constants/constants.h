@@ -32,11 +32,10 @@
 #endif
 
 #define START_MENU_DURATION 1000 * 2
-#define TEMP_DELAY 1000
 
-#define SHOW_START_WINDOW
 /// settings
 #define ENABLE_COMMANDS
+// #define SHOW_START_WINDOW
 // #define ENABLE_VALIDATE
 // #define ENABLE_LED_DEBUG
 #define DEBOUNCE_DURATION 50

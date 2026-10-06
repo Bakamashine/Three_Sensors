@@ -4,13 +4,53 @@
 #include "settings.h"
 #include <Arduino.h>
 
-Command &
-Command::allocate (int size)
+void
+Command::reset ()
 {
-  int slice_size = (size >> 1) + 1;
-  _first_slice = static_cast<char *> (malloc (sizeof (char) * slice_size));
-  _second_slice = static_cast<char *> (malloc (sizeof (char) * slice_size));
-  return *this;
+  _cmd[0] = '\0';
+  _cmdLen = 0;
+  _linePending = false;
+  _first_slice = nullptr;
+  _second_slice = nullptr;
+}
+
+bool
+Command::feedSerial ()
+{
+  while (Serial.available () > 0)
+    {
+      const int c = Serial.read ();
+      if (c < 0)
+        break;
+
+      if (_linePending)
+        {
+          // the rest of a rejected line, including the LF of a CRLF pair
+          if (c == '\n')
+            _linePending = false;
+          continue;
+        }
+
+      if (c == '\n' || c == '\r')
+        {
+          if (_cmdLen == 0)
+            continue; // empty line, or the LF of a CRLF pair
+          _cmd[_cmdLen] = '\0';
+          readCommand ();
+          reset ();
+          return true;
+        }
+
+      if (_cmdLen < CMD_BUF_SIZE - 1)
+        _cmd[_cmdLen++] = static_cast<char> (c);
+      else
+        {
+          Serial.println (F ("Command too long"));
+          reset ();
+          _linePending = true;
+        }
+    }
+  return false;
 }
 
 void
@@ -58,29 +98,10 @@ Command::setStreetSensor (Sensor &sn)
   return *this;
 }
 
-Sensor &
-Command::getFirstReserveSensor ()
-{
-  return *_firstReserveSensor;
-}
-
-Sensor &
-Command::getMainSensor ()
-{
-  return *_mainSensor;
-}
-
-Command &
-Command::setCmd (char *cmd)
-{
-  _cmd = cmd;
-  return *this;
-}
-
 void
 Command::readCommand ()
 {
-  if (_cmd == nullptr)
+  if (_cmdLen == 0)
     return;
 #ifdef DEBUG_COMMAND
   Serial.print ("readCommand: '");
@@ -108,14 +129,6 @@ Command::readCommand ()
 }
 
 void
-Command::freeData ()
-{
-  free (_first_slice);
-  free (_second_slice);
-  free (_cmd);
-}
-
-void
 Command::runCmd ()
 {
 #ifdef DEBUG_COMMAND
@@ -140,8 +153,6 @@ Command::runCmd ()
 #endif
     }
   // sens1=<int> - set the correction added to the main sensor reading
-
-  // !FIXME: Critical Error. Maybe memory leak
   else if (strcmp (_first_slice, "sens1") == 0)
     {
       _mainSensor->setCorrectInt (second_slice_value);
@@ -198,14 +209,21 @@ Command::runCmd ()
 bool
 Command::tryParse ()
 {
+  _first_slice = nullptr;
+  _second_slice = nullptr;
+  if (_cmdLen == 0)
+    return false;
+
   char *eq = strchr (_cmd, '=');
   if (eq == nullptr || eq == _cmd)
     return false;
 
-  int first_size = eq - _cmd;
-  strncpy (_first_slice, _cmd, first_size);
-  _first_slice[first_size] = '\0';
-  strcpy (_second_slice, eq + 1);
+  // Terminate the name in place. Both slices then live inside _cmd, whose
+  // length is already bounded by CMD_BUF_SIZE, so no split can overrun either
+  // half the way separate half-size buffers did.
+  *eq = '\0';
+  _first_slice = _cmd;
+  _second_slice = eq + 1;
 
   return true;
 }

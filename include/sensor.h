@@ -12,25 +12,18 @@ private:
   float _adcFilter = -1.0F;
   uint32_t _lastSampleMs = 0;
   int _sampleIdx = 0;
-  int16_t _lastTemp = 0;
-  int16_t _samples[ATTEMPTS] = {};
+  float _lastTemp = 0;
+  float _samples[ATTEMPTS] = {};
   int _correctInt = 0;
-  int16_t getTempFromTable (int rawAcp);
-  static void sort (int16_t *array, size_t size);
-  static bool *checkSensor (Sensor **, size_t size);
+  float getTempFromTable (int rawAcp);
+  static void sort (float *array, size_t size);
 
 public:
-  int16_t getTemp ();
-  static int getMaxT ();
-  static int getMinT ();
+  float getTemp ();
   Sensor (uint8_t pin);
-  Sensor &setRes (int rawAdc);
-  Sensor &setAcp (int acp);
   Sensor &setCorrectInt (int);
-  uint8_t getPin ();
   int getCorrectInt ();
   int getAcp ();
-  float getRes ();
   static int16_t ntcTempAt (size_t i);
   static int32_t ntcResAt (size_t i);
 };

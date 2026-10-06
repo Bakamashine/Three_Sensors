@@ -12,10 +12,6 @@
 class UI : public OLED_CLASS, public IDisplay
 {
 private:
-  float _temperature;
-  float _resistance;
-  int _errorCode = 0;
-  int _acp;
   MenuUI *menuUI;
 
   SENSOR_MEMBERS;
@@ -36,7 +32,6 @@ public:
 
   void initDisplay (int sda = -1, int scl = -1) override;
   void initUI () override;
-  IDisplay &setTemperature (float) override;
   void draw () override;
   MenuUI &getMenuUI () override;
   void startWindow () override;

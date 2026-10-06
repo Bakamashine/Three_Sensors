@@ -101,27 +101,6 @@ initDisplay (int sda, int scl)
 UI_METHOD (MenuUI &)
 getMenuUI () { return *menuUI; }
 
-UI_METHOD (IDisplay &)
-setTemperature (float temp)
-{
-  _temperature = temp;
-  return *this;
-}
-
-UI_METHOD (IDisplay &)
-setAcp (int acp)
-{
-  _acp = acp;
-  return *this;
-}
-
-UI_METHOD (IDisplay &)
-setRes (float v)
-{
-  _resistance = v;
-  return *this;
-}
-
 UI_METHOD (void)
 initUI ()
 {

@@ -37,12 +37,10 @@ GyverUI<GYVER_PANEL> uiImpl;
 #ifdef ENABLE_VALIDATE
 #include "validate.h"
 Validate validate;
-void validateSetup ();
 #endif
 
 void sensorSetup ();
 
-DebugUI debugUI;
 // main
 // reserve 1
 // reserve 2
@@ -59,10 +57,10 @@ MenuUI &menuUI = ui.getMenuUI ();
 Command cmd;
 #endif
 
-int16_t main_temp = 0;
-int16_t first_res_temp = 0;
-int16_t second_res_temp = 0;
-int16_t street_res_temp = 0;
+float main_temp = 0;
+float first_res_temp = 0;
+float second_res_temp = 0;
+float street_res_temp = 0;
 
 int main_acp = 0;
 int first_res_acp = 0;
@@ -85,7 +83,6 @@ void btnMenuOnClick ();
 void btnMenuLongPress ();
 void btnSetup ();
 
-void ledProgramStatus (bool);
 void ledSetup ();
 void setupCommands ();
 #ifdef ENABLE_LED_DEBUG
@@ -97,8 +94,6 @@ setup ()
 {
   Serial.begin (BOD);
   DebugUI::printTitle ("Setup");
-  // ui.begin();
-  // ui.initUI();
 
   ui.initDisplay ();
   // #if defined(SHOW_START_WINDOW) && !defined(DEBUG)
@@ -112,12 +107,7 @@ setup ()
 #ifdef ENABLE_COMMANDS
   setupCommands ();
 #endif
-  // burner / error indicator pins; haltSystem() drives these unconditionally,
-  // so they must be configured even when ENABLE_LED_DEBUG is off
   ledSetup ();
-#ifdef ENABLE_VALIDATE
-  // validateSetup ();
-#endif
 }
 
 void
@@ -141,33 +131,12 @@ loop ()
   second_res_acp = second_res_sensor.getAcp ();
   street_res_acp = street_sensor.getAcp ();
 
-  // --- Температуры ---
-  // DebugUI::printValue ("main_temp", main_temp);
-  // DebugUI::printValue ("first_res_temp", first_res_temp);
-  // DebugUI::printValue ("second_res_temp", second_res_temp);
-  // DebugUI::printValue ("street_res_temp", street_res_temp);
-
-  // --- ACP ---
-  // DebugUI::printValue ("main_acp", main_acp);
-  // DebugUI::printValue ("first_res_acp", first_res_acp);
-  // DebugUI::printValue ("second_res_acp", second_res_acp);
+#ifdef DEBUG
   DebugUI::printValue ("street_res_acp", street_res_acp);
+#endif
 
 #ifdef ENABLE_COMMANDS
-  if (Serial.available () > 0)
-    {
-      int c_strCommand_size = 10;
-      char *c_strCommand
-          = static_cast<char *> (malloc (sizeof (char) * c_strCommand_size));
-      Serial.readString ().toCharArray (c_strCommand, c_strCommand_size);
-#ifdef DEBUG_COMMAND
-      Serial.print ("Received: '");
-      Serial.print (c_strCommand);
-      Serial.println ("'");
-#endif
-      cmd.allocate (c_strCommand_size).setCmd (c_strCommand).readCommand ();
-      cmd.freeData ();
-    }
+  cmd.feedSerial ();
 #endif
   ui.setMainTemp (main_temp)
       .setFirstResTemp (first_res_temp)
@@ -188,21 +157,6 @@ loop ()
   if (Error::getErrorStatus ())
     haltSystem ();
 #endif
-  // Settings::setErrorStatus (code);
-
-  // burner
-  if (!systemHalted)
-    {
-
-      // if (temp.getTemp() <= Settings::getUserTemp() -
-      // Settings::getHysteresis())
-      // {
-      //   Settings::setBurnerStatus(true);
-
-      // }
-    }
-
-  // Settings::setSettingsStatus(digitalRead(TOGGLE_PIN) == HIGH);
 }
 
 void
@@ -359,19 +313,8 @@ ledDebug ()
 
   digitalWrite (BURNER_PIN, HIGH);
   digitalWrite (ERROR_PIN, LOW);
-  // if (digitalRead (BURNER_PIN) == HIGH)
-  //   {
-  //     digitalWrite (BURNER_PIN, LOW);
-  //     digitalWrite (ERROR_PIN, LOW);
-  //   }
 }
 #endif
-
-// void
-// ledProgramStatus(bool status)
-// {
-
-// }
 
 void
 haltSystem ()
