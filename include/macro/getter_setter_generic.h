@@ -21,20 +21,19 @@
 /// it points at rather than the pointer. Using the value variants on a pointer
 /// member produces "invalid conversion from 'Sensor*' to 'Sensor&'".
 
-#define MACRO_SETTER_PTR_DECL_OVERRIDE(ret_type, method_name, variable_name,  \
-                                       par_list, par_var_name)                \
-  ret_type set##method_name par_list override                                 \
-  {                                                                           \
-    this->variable_name = &par_var_name;                                      \
-    return *this;                                                             \
+#define MACRO_SETTER_PTR_DECL_OVERRIDE(ret_type, method_name, variable_name, \
+                                       par_list, par_var_name)               \
+  ret_type set##method_name par_list override {                              \
+    this->variable_name = &par_var_name;                                     \
+    return *this;                                                            \
   }
 
-#define MACRO_GETTER_PTR_DECL_OVERRIDE(ret_type, method_name, variable_name)  \
-  ret_type get##method_name () override { return *this->variable_name; }
+#define MACRO_GETTER_PTR_DECL_OVERRIDE(ret_type, method_name, variable_name) \
+  ret_type get##method_name() override { return *this->variable_name; }
 
-#define MACRO_GETTER_SETTER_PTR_DECL_OVERRIDE(setter_ret, getter_ret,         \
-                                              method_name, variable_name,     \
-                                              par_list, par_var_name)         \
-  MACRO_SETTER_PTR_DECL_OVERRIDE (setter_ret, method_name, variable_name,     \
-                                  par_list, par_var_name);                    \
-  MACRO_GETTER_PTR_DECL_OVERRIDE (getter_ret, method_name, variable_name);
+#define MACRO_GETTER_SETTER_PTR_DECL_OVERRIDE(setter_ret, getter_ret,     \
+                                              method_name, variable_name, \
+                                              par_list, par_var_name)     \
+  MACRO_SETTER_PTR_DECL_OVERRIDE(setter_ret, method_name, variable_name,  \
+                                 par_list, par_var_name);                 \
+  MACRO_GETTER_PTR_DECL_OVERRIDE(getter_ret, method_name, variable_name);

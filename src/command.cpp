@@ -1,12 +1,11 @@
 #include "constants/constants.h"
 #ifdef ENABLE_COMMANDS
-#include "command.h"
-#include "settings.h"
 #include <Arduino.h>
 
-void
-Command::reset ()
-{
+#include "command.h"
+#include "settings.h"
+
+void Command::reset() {
   _cmd[0] = '\0';
   _cmdLen = 0;
   _linePending = false;
@@ -14,209 +13,168 @@ Command::reset ()
   _second_slice = nullptr;
 }
 
-bool
-Command::feedSerial ()
-{
-  while (Serial.available () > 0)
-    {
-      const int c = Serial.read ();
-      if (c < 0)
-        break;
+bool Command::feedSerial() {
+  while (Serial.available() > 0) {
+    const int c = Serial.read();
+    if (c < 0) break;
 
-      if (_linePending)
-        {
-          // the rest of a rejected line, including the LF of a CRLF pair
-          if (c == '\n')
-            _linePending = false;
-          continue;
-        }
-
-      if (c == '\n' || c == '\r')
-        {
-          if (_cmdLen == 0)
-            continue; // empty line, or the LF of a CRLF pair
-          _cmd[_cmdLen] = '\0';
-          readCommand ();
-          reset ();
-          return true;
-        }
-
-      if (_cmdLen < CMD_BUF_SIZE - 1)
-        _cmd[_cmdLen++] = static_cast<char> (c);
-      else
-        {
-          Serial.println (F ("Command too long"));
-          reset ();
-          _linePending = true;
-        }
+    if (_linePending) {
+      // the rest of a rejected line, including the LF of a CRLF pair
+      if (c == '\n') _linePending = false;
+      continue;
     }
+
+    if (c == '\n' || c == '\r') {
+      if (_cmdLen == 0) continue;  // empty line, or the LF of a CRLF pair
+      _cmd[_cmdLen] = '\0';
+      readCommand();
+      reset();
+      return true;
+    }
+
+    if (_cmdLen < CMD_BUF_SIZE - 1)
+      _cmd[_cmdLen++] = static_cast<char>(c);
+    else {
+      Serial.println(F("Command too long"));
+      reset();
+      _linePending = true;
+    }
+  }
   return false;
 }
 
-void
-Command::help ()
-{
-  Serial.println (F ("ALL COMMANDS:"));
-  Serial.println (F ("help              - show this list"));
-  Serial.println (F ("hyst=<int>        - set burner hysteresis"));
-  Serial.println (F ("sens1=<int>       - set main sensor correction"));
-  Serial.println (
-      F ("sens2=<int>       - set first reserve sensor correction"));
-  Serial.println (
-      F ("sens3=<int>       - set second reserve sensor correction"));
-  Serial.println (F ("sens4=<int>       - set street sensor correction"));
-  Serial.println (F ("max=<int>         - set max permitted offset"));
-  Serial.println (F ("min=<int>         - set min permitted offset"));
-  Serial.println (F ("<other>=<int>     - not a command; try 'help'"));
+void Command::help() {
+  Serial.println(F("ALL COMMANDS:"));
+  Serial.println(F("help              - show this list"));
+  Serial.println(F("hyst=<int>        - set burner hysteresis"));
+  Serial.println(F("sens1=<int>       - set main sensor correction"));
+  Serial.println(F("sens2=<int>       - set first reserve sensor correction"));
+  Serial.println(F("sens3=<int>       - set second reserve sensor correction"));
+  Serial.println(F("sens4=<int>       - set street sensor correction"));
+  Serial.println(F("max=<int>         - set max permitted offset"));
+  Serial.println(F("min=<int>         - set min permitted offset"));
+  Serial.println(F("<other>=<int>     - not a command; try 'help'"));
 }
 
-Command &
-Command::setMainSensor (Sensor &sn)
-{
+Command &Command::setMainSensor(Sensor &sn) {
   _mainSensor = &sn;
   return *this;
 }
 
-Command &
-Command::setFirstReserveSensor (Sensor &sn)
-{
+Command &Command::setFirstReserveSensor(Sensor &sn) {
   _firstReserveSensor = &sn;
   return *this;
 }
 
-Command &
-Command::setSecondReserveSensor (Sensor &sn)
-{
+Command &Command::setSecondReserveSensor(Sensor &sn) {
   _secondReserveSensor = &sn;
   return *this;
 }
 
-Command &
-Command::setStreetSensor (Sensor &sn)
-{
+Command &Command::setStreetSensor(Sensor &sn) {
   _streetSensor = &sn;
   return *this;
 }
 
-void
-Command::readCommand ()
-{
-  if (_cmdLen == 0)
+void Command::readCommand() {
+  if (_cmdLen == 0) return;
+#ifdef DEBUG_COMMAND
+  Serial.print("readCommand: '");
+  Serial.print(_cmd);
+  Serial.println("'");
+#endif
+  if (strcmp(_cmd, "help") == 0) {
+    help();
+  } else if (tryParse()) {
+#ifdef DEBUG_COMMAND
+    Serial.print("parsed first='");
+    Serial.print(_first_slice);
+    Serial.print("' second='");
+    Serial.print(_second_slice);
+    Serial.println("'");
+#endif
+    runCmd();
     return;
-#ifdef DEBUG_COMMAND
-  Serial.print ("readCommand: '");
-  Serial.print (_cmd);
-  Serial.println ("'");
-#endif
-  if (strcmp (_cmd, "help") == 0)
-    {
-      help ();
-    }
-  else if (tryParse ())
-    {
-#ifdef DEBUG_COMMAND
-      Serial.print ("parsed first='");
-      Serial.print (_first_slice);
-      Serial.print ("' second='");
-      Serial.print (_second_slice);
-      Serial.println ("'");
-#endif
-      runCmd ();
-      return;
-    }
-  else
-    Serial.println ("Command not found");
+  } else
+    Serial.println("Command not found");
 }
 
-void
-Command::runCmd ()
-{
+void Command::runCmd() {
 #ifdef DEBUG_COMMAND
-  Serial.print ("BEFORE  cmd='");
-  Serial.print (_cmd);
-  Serial.print ("' first='");
-  Serial.print (_first_slice);
-  Serial.print ("' second='");
-  Serial.print (_second_slice);
-  Serial.println ("'");
+  Serial.print("BEFORE  cmd='");
+  Serial.print(_cmd);
+  Serial.print("' first='");
+  Serial.print(_first_slice);
+  Serial.print("' second='");
+  Serial.print(_second_slice);
+  Serial.println("'");
 #endif
-  if (_mainSensor == nullptr || _firstReserveSensor == nullptr
-      || _secondReserveSensor == nullptr || _streetSensor == nullptr)
+  if (_mainSensor == nullptr || _firstReserveSensor == nullptr ||
+      _secondReserveSensor == nullptr || _streetSensor == nullptr)
     return;
   // hyst=<int> - set the burner hysteresis deadband
-  int second_slice_value = atoi (_second_slice);
-  if (strcmp (_first_slice, "hyst") == 0)
-    {
-      Settings::setHysteresis (second_slice_value);
+  int second_slice_value = atoi(_second_slice);
+  if (strcmp(_first_slice, "hyst") == 0) {
+    Settings::setHysteresis(second_slice_value);
 #ifdef DEBUG_COMMAND
-      Serial.println ("RUN    hyst applied");
+    Serial.println("RUN    hyst applied");
 #endif
-    }
+  }
   // sens1=<int> - set the correction added to the main sensor reading
-  else if (strcmp (_first_slice, "sens1") == 0)
-    {
-      _mainSensor->setCorrectInt (second_slice_value);
+  else if (strcmp(_first_slice, "sens1") == 0) {
+    _mainSensor->setCorrectInt(second_slice_value);
 #ifdef DEBUG_COMMAND
-      Serial.println ("RUN    sens1 applied");
+    Serial.println("RUN    sens1 applied");
 #endif
-    }
+  }
   // sens2=<int> - set the correction for the first reserve sensor
-  else if (strcmp (_first_slice, "sens2") == 0)
-    {
-      _firstReserveSensor->setCorrectInt (second_slice_value);
+  else if (strcmp(_first_slice, "sens2") == 0) {
+    _firstReserveSensor->setCorrectInt(second_slice_value);
 #ifdef DEBUG_COMMAND
-      Serial.println ("RUN    sens2 applied");
+    Serial.println("RUN    sens2 applied");
 #endif
-    }
+  }
   // sens3=<int> - set the correction for the second reserve sensor
-  else if (strcmp (_first_slice, "sens3") == 0)
-    {
-      _secondReserveSensor->setCorrectInt (second_slice_value);
+  else if (strcmp(_first_slice, "sens3") == 0) {
+    _secondReserveSensor->setCorrectInt(second_slice_value);
 #ifdef DEBUG_COMMAND
-      Serial.println ("RUN    sens3 applied");
+    Serial.println("RUN    sens3 applied");
 #endif
-    }
+  }
   // sens4=<int> - set the correction for the street sensor
-  else if (strcmp (_first_slice, "sens4") == 0)
-    {
-      _streetSensor->setCorrectInt (second_slice_value);
+  else if (strcmp(_first_slice, "sens4") == 0) {
+    _streetSensor->setCorrectInt(second_slice_value);
 #ifdef DEBUG_COMMAND
-      Serial.println ("RUN    sens4 applied");
+    Serial.println("RUN    sens4 applied");
 #endif
-    }
+  }
   // max=<int> - set the maximum permitted offset
-  else if (strcmp (_first_slice, "max") == 0)
-    {
-      Settings::setMaxPermOffset (second_slice_value);
+  else if (strcmp(_first_slice, "max") == 0) {
+    Settings::setMaxPermOffset(second_slice_value);
 #ifdef DEBUG_COMMAND
-      Serial.println ("RUN    max applied");
+    Serial.println("RUN    max applied");
 #endif
-    }
+  }
   // min=<int> - set the minimum permitted offset
-  else if (strcmp (_first_slice, "min") == 0)
-    {
-      Settings::setMinPermOffset (second_slice_value);
+  else if (strcmp(_first_slice, "min") == 0) {
+    Settings::setMinPermOffset(second_slice_value);
 #ifdef DEBUG_COMMAND
-      Serial.println ("RUN    min applied");
+    Serial.println("RUN    min applied");
 #endif
-    }
+  }
 #ifdef DEBUG_COMMAND
   else
-    Serial.println ("RUN    no branch matched");
+    Serial.println("RUN    no branch matched");
 #endif
 }
 
-bool
-Command::tryParse ()
-{
+bool Command::tryParse() {
   _first_slice = nullptr;
   _second_slice = nullptr;
-  if (_cmdLen == 0)
-    return false;
+  if (_cmdLen == 0) return false;
 
-  char *eq = strchr (_cmd, '=');
-  if (eq == nullptr || eq == _cmd)
-    return false;
+  char *eq = strchr(_cmd, '=');
+  if (eq == nullptr || eq == _cmd) return false;
 
   // Terminate the name in place. Both slices then live inside _cmd, whose
   // length is already bounded by CMD_BUF_SIZE, so no split can overrun either

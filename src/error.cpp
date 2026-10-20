@@ -3,11 +3,8 @@
 bool Error::_errorStatus = false;
 int Error::_errorCode = 0;
 
-const char *
-Error::getStaticErrorMessage (int code)
-{
-  switch (code)
-    {
+const char* Error::getStaticErrorMessage(int code) {
+  switch (code) {
     case 1:
       return "Error 1: Closing";
     case 2:
@@ -31,29 +28,15 @@ Error::getStaticErrorMessage (int code)
       return "Error 202: average temperature is too low";
     default:
       return "No error";
-    }
+  }
 }
 
-void
-Error::setErrorStatus (bool st)
-{
-  _errorStatus = st;
+void Error::setErrorStatus(bool st) { _errorStatus = st; }
+
+bool Error::getErrorStatus() { return _errorStatus; }
+
+const char* Error::getErrorMessage() {
+  return Error::getStaticErrorMessage(_errorCode);
 }
 
-bool
-Error::getErrorStatus ()
-{
-  return _errorStatus;
-}
-
-const char *
-Error::getErrorMessage ()
-{
-  return Error::getStaticErrorMessage (_errorCode);
-}
-
-void
-Error::setErrorCode (int code)
-{
-  _errorCode = code;
-}
+void Error::setErrorCode(int code) { _errorCode = code; }
