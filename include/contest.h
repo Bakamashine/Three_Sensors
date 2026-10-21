@@ -1,7 +1,7 @@
 #pragma once
 
 #if UI_BACKEND == UI_BACKEND_GYVER
-#define FACTORY_NAME "Завод ИРБИС"
+#define FACTORY_NAME ""
 #define PREVIEW_ACP_TEXT "АЦП"
 #define PREVIEW_COLUMN_TEMP "t"
 #define PREVIEW_TEMP "Темп:"
@@ -18,7 +18,7 @@
 #define PREVIEW_MIN "Мин:"
 #define PREVIEW_HYST "Хист:"
 #else
-#define FACTORY_NAME "Factory IRBIS"
+#define FACTORY_NAME ""
 #define PREVIEW_ACP_TEXT "ACP"
 #define PREVIEW_COLUMN_TEMP "t"
 #define PREVIEW_TEMP "Temp:"

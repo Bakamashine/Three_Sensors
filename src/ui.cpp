@@ -120,7 +120,7 @@ void UI::startWindow() {
   setFont(FONT_START);
   this->firstPage();
   do {
-    drawCentered("Factory IRBIS", 0, 25);
+    drawCentered("Factory ", 0, 25);
     this->drawXBMP(CENTER_X / 2, CENTER_Y / 2, 70, 40, epd_bitmap_Capture);
   } while (this->nextPage());
   delay(START_MENU_DURATION);
